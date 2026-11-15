@@ -1,0 +1,7 @@
+name=Viewpoint cursor keep
+id=VPCursorKeep
+author=Tanner / DioGenerations
+modversion=1.0.0
+versionMin=42.0.0
+loadModAfter=\Viewpoint,\ProjectViewpointQOL
+description=Stops Project Viewpoint QOL from re-locking the mouse (and resetting the cursor to screen centre) when a right-click menu or popup closes while the inventory is still open.

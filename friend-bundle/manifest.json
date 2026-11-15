@@ -1,0 +1,92 @@
+﻿[
+    {
+        "path":  "3812612054\\mods\\ProjectViewpointADS\\42\\media\\java\\client\\ProjectViewpointADS.jar",
+        "kind":  "jar",
+        "original_sha256":  "56c802cd04ffc6b9388aa2c550f2dbde555997949cfedfd0bedf872fa44bb84e",
+        "patched_sha256":  "6dc24067223b34788be4b3fe44d038879d4eb9ac1c746a64bd24500ed9c5e120"
+    },
+    {
+        "path":  "3812702301\\mods\\ViewpointAdvancedMovement\\42\\media\\java\\client\\ViewpointAdvancedMovement.jar",
+        "kind":  "jar",
+        "original_sha256":  "a7a704ab5b2220e8cabecc518adb6034b3cba3dcba04163e886034ba176e44b0",
+        "patched_sha256":  "3fde8d8638142b71e249d511b2001828cd2b82d0ab3f81ef7228de638b357b98"
+    },
+    {
+        "path":  "3812864848\\mods\\ViewpointTrueBallistics\\42\\media\\java\\ViewpointTrueBallistics.jar",
+        "kind":  "jar",
+        "original_sha256":  "aaee2b68fd04aa516a388880cf000ef6e0775a5bdf30355a8d937048a16fea40",
+        "patched_sha256":  "2485f6389a3192999a20b8137429c278f6e761bb510cf4f291dbcee15d6aeeb4"
+    },
+    {
+        "path":  "3813194971\\mods\\ViewpointAdvancedThrowables\\42\\media\\java\\client\\ViewpointAdvancedThrowables.jar",
+        "kind":  "jar",
+        "original_sha256":  "4e51004f3c3f7c2737f18e065076789c8753c6923f063d3fd7cbc1ff222e955e",
+        "patched_sha256":  "d41a1f89ec0213c481695ec0a1105eb80218eb70bbdbd900d76119529bbcfc8e"
+    },
+    {
+        "path":  "3813908957\\mods\\ViewpointTrueWeathers\\42\\media\\java\\client\\ViewpointTrueWeathers.jar",
+        "kind":  "jar",
+        "original_sha256":  "a772096480e082a21f0588b85710250151c1b1d278762ba4720872d4f12c8234",
+        "patched_sha256":  "c4a07e9dc52511b8dd130642148c07828a5c37b64ca5b4b56a38f607ef785721"
+    },
+    {
+        "path":  "3814398576\\mods\\ViewpointSurface\\42\\media\\java\\client\\ViewpointInteriorSurfaces.jar",
+        "kind":  "jar",
+        "original_sha256":  "6827e2cfb215acd388385d6c72b7801ff9dfb9c200aa2a19e171bed02f1000e2",
+        "patched_sha256":  "2c53db9c7cc0a9ca03c2d51716170daa306d3416426ed45f47b75ac08277fbbd"
+    },
+    {
+        "path":  "3816442251\\mods\\ViewpointLivingProps\\42\\media\\java\\client\\ViewpointLivingProps.jar",
+        "kind":  "jar",
+        "original_sha256":  "c459e4372a8ddc357872654f7eaf588d7f66ffd1cf2a09c1b4c3aff06068d744",
+        "patched_sha256":  "633b9908c3186e518f6981178c90552a0e33a33c3f6f2b26a261864194badc90"
+    },
+    {
+        "path":  "3816856700\\mods\\yeahbitch\\42\\media\\java\\client\\PoolPitVP.jar",
+        "kind":  "jar",
+        "original_sha256":  "6373c7557dc90bcf181ff85d466c6f1398403dd3dde0e1f66ddf61b0ea3040e4",
+        "patched_sha256":  "4c61fdb9b0e70fe5c3f55b15dd9c68d1545d3e30ac357e2db7b03d3adce9d9af"
+    },
+    {
+        "path":  "3818941548\\mods\\ViewpointProperRoofs\\42\\media\\java\\client\\ProperRoofs.jar",
+        "kind":  "jar",
+        "original_sha256":  "ce408aea38a276bc72a69f8b856d04764571e0220f5aa3b5734fe31f2b08201a",
+        "patched_sha256":  "dd28f6a4708755bc1bb6a50d5dcea95fddeefad81995bfe966af9c76f4935824"
+    },
+    {
+        "path":  "3811472160\\mods\\ViewpointBloodFX\\42\\mod.info",
+        "kind":  "mod.info",
+        "original_sha256":  "25aee0ebe92f35ec325f2611919efbbefdb6f28397d873641115ce9bbafc9986",
+        "patched_sha256":  "3506db7cb6b5fab8567bceac28456403c5f99c0ef047fdd473741d3329812dfb"
+    },
+    {
+        "path":  "3811472160\\mods\\ViewpointBloodFX\\common\\mod.info",
+        "kind":  "mod.info",
+        "original_sha256":  "25aee0ebe92f35ec325f2611919efbbefdb6f28397d873641115ce9bbafc9986",
+        "patched_sha256":  "3506db7cb6b5fab8567bceac28456403c5f99c0ef047fdd473741d3329812dfb"
+    },
+    {
+        "path":  "3813801053\\mods\\ViewpointBloodFXAddon\\42\\mod.info",
+        "kind":  "mod.info",
+        "original_sha256":  "0c957cfc1186cc578207070dcc82b5cd413b81e668f7c1dae74968d2a80a0d93",
+        "patched_sha256":  "b7fd138d443e7dc474680f77c1f5ab818594949b93dc90bc5aea2ff23b4b5f51"
+    },
+    {
+        "path":  "3813801053\\mods\\ViewpointBloodFXAddon\\common\\mod.info",
+        "kind":  "mod.info",
+        "original_sha256":  "0c957cfc1186cc578207070dcc82b5cd413b81e668f7c1dae74968d2a80a0d93",
+        "patched_sha256":  "b7fd138d443e7dc474680f77c1f5ab818594949b93dc90bc5aea2ff23b4b5f51"
+    },
+    {
+        "path":  "3815630947\\mods\\ViewpointRollingHills\\42\\mod.info",
+        "kind":  "mod.info",
+        "original_sha256":  "47e2e5283599359f3c0c233dd35e4e02c8fdd179a4e5573c158a7b67ac8ae1af",
+        "patched_sha256":  "ca788de674b8f888845f9a78e85d95a06db813756ef14ba251b5c09591d4182f"
+    },
+    {
+        "path":  "3817555882\\mods\\RollingHillsPhysics\\42\\mod.info",
+        "kind":  "mod.info",
+        "original_sha256":  "3587efc4be2508b5fd9e9684e0f80f80fe0568acdd82c82126c2638b60c28631",
+        "patched_sha256":  "2455b24a0d54788e50e02cb004a78091520b58bf64d8b9d7828cfcfe15a847f7"
+    }
+]

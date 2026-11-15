@@ -1,0 +1,6 @@
+name=Co-op Fast Forward
+id=CoopFastForward
+author=Tanner / DioGenerations
+modversion=1.2.0
+versionMin=42.0.0
+description=Fast forward and pause in multiplayer like solo. Any player picks a speed (pause, 1x, 5x, 20x, 40x) with the normal speed keys or the solo-style buttons under the clock and it applies to everyone. Like solo it drops to 1x when someone moves or a zombie gets close. Timed actions, ammo loading and cooking follow the speed.

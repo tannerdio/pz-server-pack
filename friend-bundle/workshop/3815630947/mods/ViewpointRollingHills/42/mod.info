@@ -1,0 +1,16 @@
+name=Viewpoint Rolling Hills
+id=ViewpointRollingHills
+poster=poster.png
+description=Smooth rural terrain, tall wilderness hills and Appalachian Mountains for Project Viewpoint. Rolling Hills is the default, with optional Viewpoint terrain or Viewpoint cities plus Rolling Hills countryside. Flat water, level rural foundations, selected river and stream valleys. Separate Rolling Hills Physics addon available.
+modversion=0.2.25
+versionMin=42.21
+versionMax=42.22.999
+require=\ZombieBuddy,\Viewpoint
+loadModAfter=Viewpoint,ViewpointTrueWeathers,ViewpointBloodFX,ViewpointThirdPerson,PoolPit
+ZBVersionMin=2.3.0
+javaJarFile=media/java/client/ViewpointRollingHills.jar
+javaPkgName=wt.rollinghills
+
+
+
+

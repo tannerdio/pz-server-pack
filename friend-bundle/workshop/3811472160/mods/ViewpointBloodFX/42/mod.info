@@ -1,0 +1,12 @@
+name=Blood FX for Viewpoint
+id=ViewpointBloodFX
+author=sour_kisel
+modversion=1.5.2
+poster=poster.png
+description=3D blood spray, mist, splats, dismemberment, bursting parts and slow motion for Project Viewpoint's first-person view.
+require=\ZombieBuddy,\Viewpoint
+javaJarFile=media/java/client/BloodFX.jar
+javaPkgName=bloodfx
+ZBVersionMin=2.3.0
+versionMin=42.21.0
+versionMax=42.22.999

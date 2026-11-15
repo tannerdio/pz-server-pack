@@ -1,0 +1,11 @@
+name=Blood FX for Viewpoint - Fixes
+id=ViewpointBloodFXAddon
+modversion=1.0
+poster=poster.png
+description=Blood FX for Viewpoint fixes: blood sprays from the body part that was hit, stomp blood stays on the ground, and drops fly over fences.
+require=\ZombieBuddy,\Viewpoint,\ViewpointBloodFX
+javaJarFile=media/java/client/BloodFXAddon.jar
+javaPkgName=bloodfxaddon
+ZBVersionMin=2.3.0
+versionMin=42.21.0
+versionMax=42.22.999

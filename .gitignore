@@ -1,0 +1,11 @@
+# Whitelist: only what friends need is published. Everything else in this folder stays local
+# (server notes, save backups, hash lists, zips).
+/*
+!/.gitignore
+!/.gitattributes
+!/README.md
+!/Install-or-Update.bat
+!/install.ps1
+!/sync-bundle.ps1
+!/publish.ps1
+!/friend-bundle/

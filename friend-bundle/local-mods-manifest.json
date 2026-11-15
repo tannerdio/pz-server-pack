@@ -1,0 +1,182 @@
+[
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\client\\BaseKeeper\\BKCookMenu.lua",
+        "sha256":  "eb386729b120d29f741c2af485227eb7b6945d3ee89487eb2488d3185734de7f"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\client\\BaseKeeper\\BKDebugMenu.lua",
+        "sha256":  "df2dddf89f094cdd27ed21791c142e7445a5ad9015f1da975018cea8fdbe521c"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\client\\BaseKeeper\\BKExport.lua",
+        "sha256":  "1cd610b7432865374e0432b4beff5bc331624a26bfa7c4d5e7e194b3fe46bcb4"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\client\\BaseKeeper\\BKKit.lua",
+        "sha256":  "901742dc400fcb17ddb56932665a809ea94e30cb814e5ba1030600ff03b92516"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\client\\BaseKeeper\\BKLaundry.lua",
+        "sha256":  "4a042e3f091ea44d6f571cd2e945e2f93f33411e4336de0d13371302c49d0b9c"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\client\\BaseKeeper\\BKRV.lua",
+        "sha256":  "f23ecd0321a59e2289bb9b87c3441bea0cd5fd9ab4ca0994a716f177aa74c9f0"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\client\\BaseKeeper\\BKStatus.lua",
+        "sha256":  "b73e7ef547b1c983f719d41e3d0776b72a238f9148857957800b828771a19706"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\client\\BaseKeeper\\BKWishlist.lua",
+        "sha256":  "2ef6972c12a3b961adde7fdeadb5df2c6b288b948675c1f9eb2299d2b8fbbe12"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\client\\BaseKeeper\\UI\\BKAddZoneUI.lua",
+        "sha256":  "77e762ec409e5fa5623e85faad17f74629f38497a51f699728123325d7f2f46b"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\client\\BaseKeeper\\UI\\BKAreaWindow.lua",
+        "sha256":  "d048c06f35f3ba5e6fec608053c5e270290f52c90f2664cbd3cf9ae545447e00"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\client\\BaseKeeper\\UI\\BKContextMenu.lua",
+        "sha256":  "abc6f6b355c571dec25769f737d0c5da1a832de7baf98a37ca47563caa0e6f45"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\client\\BaseKeeper\\UI\\BKLootWindow.lua",
+        "sha256":  "69a3d929e7afa34578ff344ee078db5f346884be43d79534880b7ce2a2b6ff97"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\client\\BaseKeeper\\UI\\BKOverlay.lua",
+        "sha256":  "520022faa146d3c5e325c4a73c7bf71006c314b3586f3e65bda87d00f2714743"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\client\\BaseKeeper\\UI\\BKPanel.lua",
+        "sha256":  "49777fe8ac07e3c1ba1b6fdc73a4f4f0a1e58558c4a06b52b08191899bc1946e"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\client\\BaseKeeper\\UI\\BKStatusWindow.lua",
+        "sha256":  "c7ca90f4ebe9870d9bae262a9d32a36130794c7a4ee357d8c0997a5a8c130842"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\client\\BaseKeeper\\UI\\BKWishlistUI.lua",
+        "sha256":  "ff6ed8d33690bd4551c60eae527bcbdc4f393233d646beb0a647b1580f955a9c"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\server\\BaseKeeper\\BKCook.lua",
+        "sha256":  "3b8afff1d0a4c98d02091d19b076b2d1683114cf6d364c28e06ceeed26e3074e"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\server\\BaseKeeper\\BKKeeper.lua",
+        "sha256":  "bd964dd6c3ce91d64b0fe41d400f34f3883b74e07fb37bc51f051e01ef2f2a06"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\shared\\BaseKeeper\\BKLayout.lua",
+        "sha256":  "ccb05d4e940fa8cd2301186f18c4e46fda38fc1bbbaafdb4d638321053e11063"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\shared\\BaseKeeper\\BKLog.lua",
+        "sha256":  "cc1a2608e506c09a593b9bfa9e5841242ccb8cd2ec307d560f5f595ed3de3460"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\shared\\BaseKeeper\\BKLoot.lua",
+        "sha256":  "9972045d74b191db145d97cc7a1ecdd4a5c62c95a6738b0d922b257289652edc"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\shared\\BaseKeeper\\BKSections.lua",
+        "sha256":  "cdfbd289adb05ec882dc555c0901372ae83acb984fb790d09215c3967717a522"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\shared\\BaseKeeper\\BKZones.lua",
+        "sha256":  "42612533385d5db76b941e87377ebd876d0e49b656ac72b1a8204e030ac37cc4"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\shared\\BaseKeeper\\Engine\\BKCatalog.lua",
+        "sha256":  "5f78c3096dcf9eaa76a398f4289f4c4b2dddce7f287a2edd8672a7548412ccd1"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\shared\\BaseKeeper\\Engine\\BKItemClass.lua",
+        "sha256":  "15dfc31013e0945f1f81192fbeadbe2b00c3baf1aabd8d8d99137515125d22af"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\shared\\BaseKeeper\\Engine\\BKPlaces.lua",
+        "sha256":  "4946c8dc79aacc5906f27a8059b497eddf1fb7215942a2d4edfd1b53974ac935"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\shared\\BaseKeeper\\Engine\\BKPlanner.lua",
+        "sha256":  "46bb9c3dfd8e0561d2042a072b0507039d17b998b7f118894cc9128f314cb4f5"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\shared\\BaseKeeper\\Engine\\BKRules.lua",
+        "sha256":  "df215a72c8efa0315c50ecd46056eb3064d1111da7cc36d8a18e639c7a25bcf0"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\shared\\BaseKeeper\\Engine\\BKTaxonomy.lua",
+        "sha256":  "2e9f8458757ed8d3484d8ee1047585fe10eb3c0d2a0b68743d6708a9a5dbfbd2"
+    },
+    {
+        "path":  "BaseKeeper\\42\\media\\lua\\shared\\BaseKeeper\\Engine\\BKZoneScan.lua",
+        "sha256":  "6df9c1e465f2cb3209daf524f8c4a8829d1f08aef99fd07704c9f5cb78ca0fbb"
+    },
+    {
+        "path":  "BaseKeeper\\42\\mod.info",
+        "sha256":  "57b7afb781c148e31508581c431d4e5ffac3e58ceed288e43e1954638fb681ac"
+    },
+    {
+        "path":  "BaseKeeper\\common\\.keep",
+        "sha256":  "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+        "path":  "CoopFastForward\\42\\media\\lua\\client\\CoopFF_Client.lua",
+        "sha256":  "0654dd41bc3e6543dfaea8541b95b9b309bab6c7486e9d3f2e12fb21151057cc"
+    },
+    {
+        "path":  "CoopFastForward\\42\\media\\lua\\server\\CoopFF_Server.lua",
+        "sha256":  "d72a5be15895d96499bc08a85793c9dfcefcb26885f27eec2f7b3cb86e615b51"
+    },
+    {
+        "path":  "CoopFastForward\\42\\mod.info",
+        "sha256":  "d755c27fa6176b3ebebf21fd2f4cef9c83cbf92d4c748e98efde81daec92a525"
+    },
+    {
+        "path":  "CoopFastForward\\common\\.keep",
+        "sha256":  "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068"
+    },
+    {
+        "path":  "EFZAdsCompat\\42\\media\\lua\\client\\EFZAdsCompat.lua",
+        "sha256":  "e737cd8d50a3863a62ed6962933f2cbd4e504657e3db9d8da4db52aba770c3ce"
+    },
+    {
+        "path":  "EFZAdsCompat\\42\\mod.info",
+        "sha256":  "74b78b285c5648838162007409d268fcb42906844fa701114afca17b3fe97875"
+    },
+    {
+        "path":  "EFZAdsCompat\\common\\.keep",
+        "sha256":  "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068"
+    },
+    {
+        "path":  "GunSwap\\42\\media\\lua\\server\\GunSwap.lua",
+        "sha256":  "f5a455f2704e8861ed9e159f894e897254dc001b6293575f4ccec5cb739d3b3a"
+    },
+    {
+        "path":  "GunSwap\\42\\mod.info",
+        "sha256":  "d7065cb9ad5f1204976280fc6d7acfd154725dea98e004b34077be73ec2bf81a"
+    },
+    {
+        "path":  "GunSwap\\common\\.keep",
+        "sha256":  "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+        "path":  "VPCursorKeep\\42\\media\\lua\\client\\VPCursorKeep.lua",
+        "sha256":  "ea8796f406b578fce9563f5b07eb2ea179cd994ac075e72a9f234d46eb1a141f"
+    },
+    {
+        "path":  "VPCursorKeep\\42\\mod.info",
+        "sha256":  "0cdce7b63ccee339f7ac61f5b858ceac2bc785ececd0874bcd37c30bf25f4f62"
+    },
+    {
+        "path":  "VPCursorKeep\\common\\.keep",
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+]

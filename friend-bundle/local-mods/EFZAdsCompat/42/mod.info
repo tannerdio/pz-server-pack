@@ -1,0 +1,7 @@
+name=EFZ x Viewpoint ADS compat
+id=EFZAdsCompat
+author=Tanner / DioGenerations
+modversion=1.0.0
+versionMin=42.0.0
+loadModAfter=\ProjectViewpointADS,\EscapeFromZomboidFirearms
+description=Project Viewpoint ADS ignores Escape From Zomboid Firearms guns, so the two mods stop fighting over the arms. Other guns keep Project Viewpoint ADS.
