@@ -126,7 +126,7 @@ $linked = @()
 foreach ($m in Get-ChildItem -LiteralPath (Join-Path $bundle 'local-mods') -Directory) {
     $dst = Join-Path $modsDir $m.Name
     $existing = Get-Item -LiteralPath $dst -Force -ErrorAction SilentlyContinue
-    if ($existing -and ($existing.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+    if ($existing -and ("$($existing.Attributes)" -match 'ReparsePoint')) {
         # A link to a development copy (the host's own PC). Never mirror into it.
         $linked += $m.Name; Say "  $($m.Name): linked folder, left alone"; continue
     }

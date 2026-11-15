@@ -6,11 +6,20 @@ and the mod list. Game build 42.22.2 with Project Viewpoint.
 ## Install or update
 
 1. Close Project Zomboid.
-2. Download [Install-or-Update.bat](Install-or-Update.bat) (open it, then the download button at the top right)
-   and double-click it. Windows may warn about an unknown file: choose **More info > Run anyway**.
+2. Open the Start menu, type `PowerShell`, open **Windows PowerShell**, paste this line and press Enter:
+
+   ```
+   irm https://raw.githubusercontent.com/tannerdio/pz-server-pack/main/get.ps1 | iex
+   ```
+
 3. Read the summary. Green means done. Yellow or red lines say what is left to do.
 
-Run the same file again whenever the host says there is an update. It always fetches the newest version.
+Run the same line again whenever the host says there is an update. It always fetches the newest version.
+
+There is nothing to download by hand, so the browser has nothing to block. If you would rather double-click a
+file, [Install-or-Update.bat](Install-or-Update.bat) does the same thing, but Edge may refuse the download
+("signature is corrupt or invalid") and Windows may warn about an unknown file. That is only because the file
+is not signed by a company; the paste-in line avoids both.
 
 ## What it does
 

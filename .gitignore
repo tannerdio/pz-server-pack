@@ -6,6 +6,7 @@
 !/README.md
 !/Install-or-Update.bat
 !/install.ps1
+!/get.ps1
 !/sync-bundle.ps1
 !/publish.ps1
 !/friend-bundle/
