@@ -7,6 +7,7 @@ param(
     [string]$Source = $PSScriptRoot,
     [string]$WorkshopDir,
     [string]$ZomboidDir = (Join-Path $env:USERPROFILE 'Zomboid'),
+    [string]$GameDir,
     [switch]$DryRun
 )
 $ErrorActionPreference = 'Stop'
@@ -188,6 +189,45 @@ if (Test-Path -LiteralPath $idsFile) {
         Say "  $($absent.Count) missing. The game downloads them when you join the server:" 'Yellow'
         foreach ($id in ($absent | Select-Object -First 10)) { Say "    https://steamcommunity.com/sharedfiles/filedetails/?id=$id" 'Yellow' }
         if ($absent.Count -gt 10) { Say "    ... and $($absent.Count - 10) more" 'Yellow' }
+    }
+}
+
+# --- 5. Game memory --------------------------------------------------------------------------------
+# The game ships with a 3 GB limit, which this mod list fills: the game then freezes on the way into the world.
+# Raise it to half of this PC's memory (at most 12 GB). Never lowers it. A Steam game update can reset it:
+# run this again.
+Say ''
+Say 'Game memory' 'Cyan'
+if (-not $GameDir) { $GameDir = Join-Path (Split-Path (Split-Path (Split-Path $WorkshopDir))) 'common\ProjectZomboid' }
+$jsonPath = Join-Path $GameDir 'ProjectZomboid64.json'
+if (-not (Test-Path -LiteralPath $jsonPath)) {
+    Say "  could not find ProjectZomboid64.json in $GameDir, left alone" 'Yellow'
+} else {
+    $ramGb  = [int][math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
+    $wantMb = [int]([math]::Min(12, [math]::Floor($ramGb / 2)) * 1024)
+    $text = [IO.File]::ReadAllText($jsonPath)
+    $m = [regex]::Match($text, '-Xmx(\d+)([mMgG])')
+    if (-not $m.Success) {
+        Say '  no memory setting found in ProjectZomboid64.json, left alone' 'Yellow'
+    } else {
+        $haveMb = [int]$m.Groups[1].Value
+        if ($m.Groups[2].Value -match 'g') { $haveMb *= 1024 }
+        if ($haveMb -ge $wantMb) {
+            Say "  game limit is $haveMb MB, this PC has $ramGb GB: left alone"
+        } elseif ($DryRun) {
+            Say "  would raise the game limit from $haveMb MB to $wantMb MB (this PC has $ramGb GB)"
+        } else {
+            try {
+                $keep = "$jsonPath.before-server-pack"
+                if (-not (Test-Path -LiteralPath $keep)) { Copy-Item -LiteralPath $jsonPath -Destination $keep }
+                $new = $text.Substring(0, $m.Index) + "-Xmx${wantMb}m" + $text.Substring($m.Index + $m.Length)
+                [IO.File]::WriteAllText($jsonPath, $new, (New-Object Text.UTF8Encoding $false))
+                Say "  game limit raised from $haveMb MB to $wantMb MB (this PC has $ramGb GB)" 'Green'
+            } catch {
+                Say "  FAILED to change ProjectZomboid64.json: $($_.Exception.Message)" 'Red'; $problems++
+            }
+        }
+        if ($ramGb -lt 16) { Say "  This PC has only $ramGb GB of memory. This mod list may still be too much for it." 'Yellow' }
     }
 }
 
