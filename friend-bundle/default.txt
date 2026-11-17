@@ -174,7 +174,6 @@ mods
     mod = ViewpointAdvancedThrowables,
     mod = ViewpointBarricade,
     mod = ViewpointClassicCamera,
-    mod = ViewpointDoor,
     mod = ViewpointProperRoofs,
     mod = ViewpointSurface,
     mod = ViewpointVisibleLoot,
