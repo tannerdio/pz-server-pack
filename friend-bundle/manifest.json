@@ -48,12 +48,6 @@
         "patched_sha256":  "4c61fdb9b0e70fe5c3f55b15dd9c68d1545d3e30ac357e2db7b03d3adce9d9af"
     },
     {
-        "path":  "3818941548\\mods\\ViewpointProperRoofs\\42\\media\\java\\client\\ProperRoofs.jar",
-        "kind":  "jar",
-        "original_sha256":  "ce408aea38a276bc72a69f8b856d04764571e0220f5aa3b5734fe31f2b08201a",
-        "patched_sha256":  "dd28f6a4708755bc1bb6a50d5dcea95fddeefad81995bfe966af9c76f4935824"
-    },
-    {
         "path":  "3811472160\\mods\\ViewpointBloodFX\\42\\mod.info",
         "kind":  "mod.info",
         "original_sha256":  "25aee0ebe92f35ec325f2611919efbbefdb6f28397d873641115ce9bbafc9986",

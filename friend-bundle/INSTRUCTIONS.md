@@ -24,7 +24,7 @@ Added 2026-11-13, a new weapon pack:
 
 | Item | Purpose |
 |---|---|
-| `workshop\` | The 15 patched files, laid out exactly as they sit under `steamapps\workshop\content\108600\` |
+| `workshop\` | The 14 patched files, laid out exactly as they sit under `steamapps\workshop\content\108600\` |
 | `manifest.json` | For each file: relative path, sha256 of the unpatched original, sha256 of the patched file |
 | `local-mods\BaseKeeper\` | Base Keeper 0.19.0, the other player's own mod. It is not on the Workshop, so it ships here |
 | `local-mods\EFZAdsCompat\` | EFZ x Viewpoint ADS compat 1.0.0, also the other player's own mod |
@@ -84,9 +84,9 @@ Then the mod list:
 
 ## Report back
 
-List each of the 15 files as patched, already patched, mismatched, or missing, whether Base Keeper, EFZAdsCompat, CoopFastForward, VPCursorKeep and GunSwap were installed and verified, whether both weapon pack Workshop items are present and at which version, plus the result of the mod list comparison.
+List each of the 14 files as patched, already patched, mismatched, or missing, whether Base Keeper, EFZAdsCompat, CoopFastForward, VPCursorKeep and GunSwap were installed and verified, whether both weapon pack Workshop items are present and at which version, plus the result of the mod list comparison.
 
-## Reference: the 15 files
+## Reference: the 14 files
 
 Version cap (`versionMax=42.22.999`):
 
@@ -105,9 +105,10 @@ Jar patch:
 - `3814398576` ViewpointInteriorSurfaces.jar
 - `3816442251` ViewpointLivingProps.jar
 - `3816856700` PoolPitVP.jar
-- `3818941548` ProperRoofs.jar
 
 "6301 3D models for Viewpoint" (3810302175) was also patched originally, but its author updated it on 2026-11-12 for 42.22.2. It needs no edit; just make sure Steam has the current version.
+
+"Viewpoint - Proper Roofs" (3818941548) was patched too, until its author updated it on 2026-11-16 (0.3.41). It needs no edit now; make sure Steam has the current version. If an old `ProperRoofs.jar.pre-pzfix` is still beside the jar, ignore it and do not copy it back.
 
 ## What changed on the server on 2026-11-14 (tell the user)
 

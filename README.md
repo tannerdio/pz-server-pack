@@ -23,7 +23,7 @@ is not signed by a company; the paste-in line avoids both.
 
 ## What it does
 
-- Patches 15 files in Workshop mods that have not been updated for 42.22.2 yet. The original of each file is
+- Patches 14 files in Workshop mods that have not been updated for 42.22.2 yet. The original of each file is
   kept beside it (`.pre-pzfix` or `.pre-unpin`). A file from a different mod version is left alone and reported.
 - Copies the host's own mods into `%UserProfile%\Zomboid\mods`.
 - Replaces `%UserProfile%\Zomboid\mods\default.txt` with the server's mod list. Your old list is kept beside it.
