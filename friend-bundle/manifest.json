@@ -30,12 +30,6 @@
         "patched_sha256":  "c4a07e9dc52511b8dd130642148c07828a5c37b64ca5b4b56a38f607ef785721"
     },
     {
-        "path":  "3814398576\\mods\\ViewpointSurface\\42\\media\\java\\client\\ViewpointInteriorSurfaces.jar",
-        "kind":  "jar",
-        "original_sha256":  "6827e2cfb215acd388385d6c72b7801ff9dfb9c200aa2a19e171bed02f1000e2",
-        "patched_sha256":  "2c53db9c7cc0a9ca03c2d51716170daa306d3416426ed45f47b75ac08277fbbd"
-    },
-    {
         "path":  "3816442251\\mods\\ViewpointLivingProps\\42\\media\\java\\client\\ViewpointLivingProps.jar",
         "kind":  "jar",
         "original_sha256":  "c459e4372a8ddc357872654f7eaf588d7f66ffd1cf2a09c1b4c3aff06068d744",
