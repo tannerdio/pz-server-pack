@@ -134,6 +134,7 @@ mods
     mod = KI5minifixes,
     mod = MilPonchoB42,
     mod = ChuckleberryFinnAlertSystem,
+    mod = Mvdox-Grass-v1,
     mod = Neat_Building,
     mod = Neat_Crafting,
     mod = ProjectViewpointKI5VehiclePartsFix,

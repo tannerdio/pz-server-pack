@@ -8,7 +8,7 @@ Project Zomboid updated to build 42.22.2. Several Project Viewpoint add-on mods 
 
 - **6 `mod.info` files (4 mods)** had `versionMax` capped at 42.21, so the game refused to load them. The only change is `versionMax=42.22.999`.
 - **7 mod jars** call `zombie.util.list.PZArrayList`, a class 42.22 removed (`IsoGridSquare.getObjects()` now returns `java.util.List`). The jars were rewritten to use `java.util.List` through a small added helper class, `pzcompat/ListShim`.
-- **Mvdox Grass** (`Mvdox-Grass-v1`, Workshop 3815166404) is switched off, because it crashes Viewpoint 0.1.6.2 at the main menu.
+- **Mvdox Grass** (`Mvdox-Grass-v1`, Workshop 3815166404) is back on since 2026-11-17 (version 1.1.78, for Viewpoint 0.1.7). It is an unmodified Workshop item: the user subscribes in Steam; the new `default.txt` turns it on.
 
 Added 2026-11-13, a new weapon pack:
 
