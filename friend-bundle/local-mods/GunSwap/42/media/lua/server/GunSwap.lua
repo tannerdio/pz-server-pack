@@ -23,7 +23,7 @@ end
 
 GunSwap = GunSwap or {}
 local G = GunSwap
-G.VERSION = 2
+G.VERSION = 3
 G.stats = { chunks = 0, waiting = 0, fills = 0, vehicles = 0, seen = 0, replaced = 0, people = 0, zombies = 0, boxed = 0, kept = 0, unwrapped = 0 }
 
 -- VFE item (and Improvised Silencers part) -> the base-game item whose EFZ replacement it gets.
@@ -58,6 +58,28 @@ map("RecoilPad", { "Sling", "Sling2", "Bipod", "ShellHolder", "IronSight", "Fibe
     "ShellStraps", "M60BrassCatcher", "Coupled556", "Coupled762", "Silencer", "MetalPipeSilencer",
     "TorchSilencer", "WaterBottleSilencer", "PotatoSilencer" })
 
+-- Vanilla Firearms Expansion parts 2 and 3 (mods VFES and VFEP93).
+map("Shotgun", { "MP153", "MP153sawn", "Saiga12", "AA12" })
+map("AssaultRifle", { "AK104", "AK105", "AK74", "AKS74U", "Bizon", "Galil", "HK416", "M249", "PKM", "PPSH",
+    "UMP45", "VSS", "Vityaz", "1522", "Block2", "M4A1", "MP7", "P90", "SPR", "SPRSD", "Vector45", "Vector9",
+    "n418", "n418sd", "scar17" })
+map("HuntingRifle", { "Mosin", "SV98", "SVD", "SVT40" })
+map("Pistol", { "Makarov", "USP45", "CP33", "FN57" })
+map("556Clip", { "12Clip5", "45Clip25", "545Clip", "556box100", "762Clip10", "762Clip102", "762Clip103",
+    "762box100", "939Clip10", "9mmClip302", "BizonClip", "PPSHDrum", "12Clip32", "22ClipRifle25", "45Clip30v",
+    "46Clip40", "57Clip50", "9mmClip33v", "scar17clip" })
+map("9mmClip", { "9mmClip8", "22Clip33", "57Clip20" })
+map("556Bullets", { "545Bullets" })
+map("556Box", { "545Box" })
+map("556Carton", { "545Carton" })
+map("308Bullets", { "76254Bullets" })
+map("308Box", { "76254Box" })
+map("308Carton", { "76254Carton" })
+map("Bullets9mm", { "46Bullets", "57Bullets" })
+map("Bullets9mmBox", { "46Box", "57Box" })
+map("Bullets9mmCarton", { "46Carton", "57Carton" })
+map("RecoilPad", { "Coupled545" })
+
 -- VFE gun cases and ammo cans disappear with their contents when VFE is removed, so they are
 -- emptied into whatever holds them and taken away.
 local UNWRAP = {}
@@ -69,6 +91,9 @@ end
 UNWRAP["Base.VFEAmmoCanNarrow"] = true
 UNWRAP["Base.VFEAmmoCanNarrow_Toolkit"] = true
 UNWRAP["Base.VFEAmmoCanWide"] = true
+UNWRAP["Base.VFESRifleCase1"] = true
+UNWRAP["Base.VFEP93PistolCase1"] = true
+UNWRAP["Base.VFEP93RifleCase1"] = true
 
 local function anchorOf(fullType)
     local anchor = ANCHOR[fullType]
