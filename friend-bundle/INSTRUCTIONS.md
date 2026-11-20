@@ -34,7 +34,7 @@ Added 2026-11-13, a new weapon pack:
 | `local-mods\GunSwap\` | Gun Swap 1.3.0, also the other player's own mod |
 | `local-mods\EFZBoxesOnly\` | EFZ Boxes Only 1.0.0, also the other player's own mod |
 | `local-mods-manifest.json` | sha256 of every file under `local-mods\` |
-| `default.txt` | The other player's enabled mod list (198 mods), from `%UserProfile%\Zomboid\mods\default.txt` |
+| `default.txt` | The other player's enabled mod list (197 mods), from `%UserProfile%\Zomboid\mods\default.txt` |
 | `pzfix.py`, `linkcheck.py` | The scripts that produced the jar patches. Reference and fallback only |
 
 ## Before you start

@@ -144,7 +144,6 @@ mods
     mod = ProjectViewpointShelves,
     mod = ViewpointTrueWeathers,
     mod = ViewpointTrueWeathersGameplay,
-    mod = ViewpointConstruction,
     mod = ProximityInventory,
     mod = RVViewpointPatch,
     mod = RainCleansBlood,
