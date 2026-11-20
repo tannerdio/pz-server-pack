@@ -2,9 +2,10 @@
 --
 -- Escape From Zomboid Firearms (EFZ) already replaces base-game guns and ammo, but only in rooms
 -- nobody has seen yet, and it does not know the Vanilla Firearms Expansion (VFE) items at all.
--- This walks every chunk once as it loads, plus every vehicle and every freshly filled container,
--- and replaces unwanted guns, magazines, attachments and ammo with EFZ items of the same kind,
--- using EFZ's own loot draw. Player inventories are never walked.
+-- This replaces unwanted guns, magazines, attachments and ammo with EFZ items of the same kind,
+-- using EFZ's own loot draw, in: every chunk as it loads (furniture, floor, corpses; again until
+-- all its containers have their loot), every vehicle, every freshly filled container, and what
+-- players carry. Loose EFZ rounds lying in the world are packed into boxes on the way.
 
 if isClient() then return end
 if not getActivatedMods():contains("EscapeFromZomboidFirearms") then
@@ -22,8 +23,8 @@ end
 
 GunSwap = GunSwap or {}
 local G = GunSwap
-G.VERSION = 1
-G.stats = { chunks = 0, vehicles = 0, replaced = 0, kept = 0, unwrapped = 0 }
+G.VERSION = 2
+G.stats = { chunks = 0, waiting = 0, fills = 0, vehicles = 0, seen = 0, replaced = 0, people = 0, boxed = 0, kept = 0, unwrapped = 0 }
 
 -- VFE item (and Improvised Silencers part) -> the base-game item whose EFZ replacement it gets.
 -- Base-game names that VFE merely overrides (Shotgun, Pistol, AssaultRifle, ...) are already in
@@ -79,6 +80,9 @@ G.anchorOf = anchorOf
 
 -- EFZ items for one unwanted item. choices: per-container memory, so a pile of loose rounds
 -- becomes one kind of round and not thirty different ones.
+-- Returns the new items and whether the old item goes. nil: EFZ has nothing for it, it stays.
+-- An empty list that still removes the item is a loose round that lost its draw for a box
+-- (EFZ Boxes Only pays loose rounds out in boxes by chance).
 local function replacements(item, anchor, ctx, o, rng, choices)
     local isWeapon = instanceof(item, "HandWeapon")
     local key = item:getFullType()
@@ -101,7 +105,29 @@ local function replacements(item, anchor, ctx, o, rng, choices)
             end
         end
     end
+    if #items == 0 and not choice.roundsPerBox then return nil end
     return items
+end
+
+-- A loose EFZ round that has a box: its box item and the rounds in one. nil for everything else
+-- (boxes, launcher shots, other items).
+local function looseRound(fullType)
+    local e = Loot.roundOf and Loot.roundOf(fullType)
+    if not e or e.form ~= "loose" then return nil end
+    local row = e.row
+    local perBox = tonumber(row.perBox) or 0
+    if row.launcher or perBox <= 1 then return nil end
+    local box = (row.own and fullType == row.own.type) and row.own.box or row.box
+    if not box or box == fullType then return nil end
+    return box, perBox
+end
+
+-- n loose rounds -> boxes: every full box, and one more by chance for the rest, so nothing is
+-- gained or lost on average.
+local function boxesFor(n, perBox, rng)
+    local boxes = math.floor(n / perBox)
+    if rng() < (n % perBox) / perBox then boxes = boxes + 1 end
+    return boxes
 end
 
 local function addTo(container, item)
@@ -109,13 +135,48 @@ local function addTo(container, item)
     if isServer() then pcall(sendAddItemToContainer, container, item) end
 end
 
-local function removeFrom(container, item)
+-- who: the player whose inventory this is (nil for the world). What they hold or wear on a
+-- belt or back is let go first.
+local function removeFrom(container, item, who)
+    if who then
+        pcall(who.removeAttachedItem, who, item)
+        pcall(who.removeFromHands, who, item)
+    end
     if isServer() then pcall(sendRemoveItemFromContainer, container, item) end
     container:Remove(item)
 end
 
+-- Loose EFZ rounds already lying in a container become boxes.
+local function boxLoose(container, o, rng)
+    local items = container:getItems()
+    local groups, order = {}, {}
+    for i = 0, items:size() - 1 do
+        local item = items:get(i)
+        local fullType = item:getFullType()
+        local g = groups[fullType]
+        if g == nil then
+            local box, perBox = looseRound(fullType)
+            g = box and { box = box, perBox = perBox, items = {} } or false
+            groups[fullType] = g
+            if g then order[#order + 1] = g end
+        end
+        if g then g.items[#g.items + 1] = item end
+    end
+    local n = 0
+    for _, g in ipairs(order) do
+        local boxes = boxesFor(#g.items, g.perBox, rng)
+        for _, item in ipairs(g.items) do removeFrom(container, item) end
+        for _, box in ipairs(LI.create({ type = g.box, count = boxes })) do addTo(container, box) end
+        n = n + #g.items
+    end
+    G.stats.boxed = G.stats.boxed + n
+    return n
+end
+
 -- One container and the bags in it. Returns how many items were replaced.
-function G.container(container, ctx, o, rng, depth)
+-- who: set when this is a player's inventory; loose EFZ rounds a player carries are left alone
+-- (they are what you load magazines from).
+function G.container(container, ctx, o, rng, depth, who)
     depth = depth or 0
     if not container or depth > 3 then return 0 end
     local items = container:getItems()
@@ -126,7 +187,7 @@ function G.container(container, ctx, o, rng, depth)
         local fullType = item:getFullType()
         if instanceof(item, "InventoryContainer") then
             local inner = item:getInventory()
-            n = n + G.container(inner, ctx, o, rng, depth + 1)
+            n = n + G.container(inner, ctx, o, rng, depth + 1, who)
             if UNWRAP[fullType] and inner then
                 local innerItems, moved = inner:getItems(), {}
                 for i = 0, innerItems:size() - 1 do moved[#moved + 1] = innerItems:get(i) end
@@ -134,15 +195,16 @@ function G.container(container, ctx, o, rng, depth)
                     inner:Remove(m)
                     addTo(container, m)
                 end
-                removeFrom(container, item)
+                removeFrom(container, item, who)
                 G.stats.unwrapped = G.stats.unwrapped + 1
             end
         else
             local anchor = anchorOf(fullType)
             if anchor then
+                G.stats.seen = G.stats.seen + 1
                 local new = replacements(item, anchor, ctx, o, rng, choices)
-                if new and #new > 0 then
-                    removeFrom(container, item)
+                if new then
+                    removeFrom(container, item, who)
                     for _, r in ipairs(new) do addTo(container, r) end
                     n = n + 1
                 else
@@ -151,6 +213,8 @@ function G.container(container, ctx, o, rng, depth)
             end
         end
     end
+    if not who then n = n + boxLoose(container, o, rng) end
+    if n > 0 and container.setDrawDirty then container:setDrawDirty(true) end
     return n
 end
 
@@ -165,14 +229,23 @@ local function takeOff(sq, worldObject)
 end
 
 -- One square: furniture and other object containers, corpses, items on the floor.
-function G.square(sq, ctx, o, rng)
+-- state.unfilled is set when a container has no loot yet (the game fills it later), so the
+-- chunk is looked at again.
+function G.square(sq, ctx, o, rng, state)
     local n = 0
     local objects = sq:getObjects()
     for i = 0, objects:size() - 1 do
         local obj = objects:get(i)
         if obj and obj.getContainerCount then
             for c = 0, obj:getContainerCount() - 1 do
-                n = n + G.container(obj:getContainerByIndex(c), ctx, o, rng, 0)
+                local container = obj:getContainerByIndex(c)
+                if container then
+                    if state and container.isExplored and not container:isExplored() and container:getItems():isEmpty() then
+                        state.unfilled = true
+                    else
+                        n = n + G.container(container, ctx, o, rng, 0)
+                    end
+                end
             end
         end
     end
@@ -187,6 +260,7 @@ function G.square(sq, ctx, o, rng)
     if world and world:size() > 0 then
         local list = {}
         for i = 0, world:size() - 1 do list[#list + 1] = world:get(i) end
+        local loose, order = {}, {}
         for _, wo in ipairs(list) do
             local item = wo:getItem()
             if item then
@@ -207,17 +281,37 @@ function G.square(sq, ctx, o, rng)
                 else
                     local anchor = anchorOf(fullType)
                     if anchor then
+                        G.stats.seen = G.stats.seen + 1
                         local new = replacements(item, anchor, ctx, o, rng, nil)
-                        if new and #new > 0 then
+                        if new then
                             takeOff(sq, wo)
                             for _, r in ipairs(new) do dropOn(sq, r, rng) end
                             n = n + 1
                         else
                             G.stats.kept = G.stats.kept + 1
                         end
+                    else
+                        local box, perBox = looseRound(fullType)
+                        if box then
+                            local g = loose[fullType]
+                            if not g then
+                                g = { box = box, perBox = perBox, objects = {} }
+                                loose[fullType] = g
+                                order[#order + 1] = g
+                            end
+                            g.objects[#g.objects + 1] = wo
+                        end
                     end
                 end
             end
+        end
+        -- Loose EFZ rounds on the floor become boxes on the same square.
+        for _, g in ipairs(order) do
+            local boxes = boxesFor(#g.objects, g.perBox, rng)
+            for _, wo in ipairs(g.objects) do takeOff(sq, wo) end
+            for _, box in ipairs(LI.create({ type = g.box, count = boxes })) do dropOn(sq, box, rng) end
+            n = n + #g.objects
+            G.stats.boxed = G.stats.boxed + #g.objects
         end
     end
     return n
@@ -236,20 +330,30 @@ local function placeOfSquare(sq, cache)
 end
 
 -- Chunks ------------------------------------------------------------------------------------
+-- A chunk is marked done (in the save) only once every container in it has had its loot. Until
+-- then it is looked at again every few minutes and every time it loads.
 local CHUNK, LEVELS = 8, 9
 local DELAY_MS = 4000
 local SQUARES_PER_TICK = 144
 local queue, head, tail, pending = {}, 1, 0, {}
+local retry = {}
 local lastCx, lastCy
 
 local function done()
     return ModData.getOrCreate("GunSwapWorld")
 end
 
+local function enqueue(key, cx, cy, delay)
+    if pending[key] then return end
+    pending[key] = true
+    tail = tail + 1
+    queue[tail] = { key = key, cx = cx, cy = cy, at = getTimestampMs() + delay }
+end
+
 -- Returns true when the chunk is finished, false when the budget ran out first.
 local function chunkPart(job, budget)
     if not job.next then
-        job.next, job.o, job.cache, job.n = 0, Loot.options(), {}, 0
+        job.next, job.o, job.cache, job.n, job.squares = 0, Loot.options(), {}, 0, 0
     end
     local cell, rng = getCell(), Loot.rng
     local total = CHUNK * CHUNK * LEVELS
@@ -259,7 +363,10 @@ local function chunkPart(job, budget)
         local y = job.cy * CHUNK + math.floor(i / LEVELS) % CHUNK
         local z = i % LEVELS - 1
         local sq = cell:getGridSquare(x, y, z)
-        if sq then job.n = job.n + G.square(sq, placeOfSquare(sq, job.cache), job.o, rng) end
+        if sq then
+            job.squares = job.squares + 1
+            job.n = job.n + G.square(sq, placeOfSquare(sq, job.cache), job.o, rng, job)
+        end
         i = i + 1
         budget = budget - 1
     end
@@ -276,12 +383,21 @@ local function pump(budget)
         if not ok then
             print("[GunSwap] chunk " .. job.key .. " failed: " .. tostring(finished))
             finished, left = true, budget
+            job.failed = true
         end
         budget = left or 0
         if finished then
-            marks = marks or done()
-            marks[job.key] = G.VERSION
-            G.stats.chunks = G.stats.chunks + 1
+            pending[job.key] = nil
+            if job.failed or (job.squares or 0) == 0 then
+                -- Not loaded any more (or broken): nothing learned, try again when it loads.
+            elseif job.unfilled then
+                retry[job.key] = { cx = job.cx, cy = job.cy }
+                G.stats.waiting = G.stats.waiting + 1
+            else
+                marks = marks or done()
+                marks[job.key] = G.VERSION
+                G.stats.chunks = G.stats.chunks + 1
+            end
             if (job.n or 0) > 0 then
                 G.stats.replaced = G.stats.replaced + job.n
                 print("[GunSwap] chunk " .. job.key .. ": replaced " .. job.n .. " item(s)")
@@ -299,41 +415,76 @@ local function onLoadGridsquare(sq)
     if cx == lastCx and cy == lastCy then return end
     lastCx, lastCy = cx, cy
     local key = cx .. "," .. cy
-    if pending[key] then return end
-    pending[key] = true
-    if done()[key] == G.VERSION then return end
-    tail = tail + 1
-    queue[tail] = { key = key, cx = cx, cy = cy, at = getTimestampMs() + DELAY_MS }
+    if pending[key] or done()[key] == G.VERSION then return end
+    enqueue(key, cx, cy, DELAY_MS)
 end
 
--- Vehicles: trunks, glove boxes and seats. Marked on the vehicle itself, since vehicles move.
+-- Chunks that still had empty, unfilled containers: look again.
+local function retryChunks()
+    local list = retry
+    retry = {}
+    for key, c in pairs(list) do enqueue(key, c.cx, c.cy, 0) end
+end
+
+-- Vehicles: trunks, glove boxes and seats, every sweep (their loot also arrives late).
 local function sweepVehicles()
     local set = getCell() and getCell():getVehicles()
     if not set then return end
     -- getVehicles() is a Set, which Lua cannot index: copy it into a list first.
     local vehicles = ArrayList.new()
     vehicles:addAll(set)
-    local o, rng
+    local o, rng = Loot.options(), Loot.rng
     for i = 0, vehicles:size() - 1 do
         local vehicle = vehicles:get(i)
-        local md = vehicle and vehicle:getModData()
-        if md and md.GunSwap ~= G.VERSION then
-            md.GunSwap = G.VERSION
-            o, rng = o or Loot.options(), rng or Loot.rng
+        if vehicle then
             local n = 0
             for p = 0, vehicle:getPartCount() - 1 do
                 local part = vehicle:getPartByIndex(p)
                 local container = part and part:getItemContainer()
-                if container then
+                if container and not container:getItems():isEmpty() then
                     local ok, count = pcall(G.container, container, "civil", o, rng, 0)
                     if ok then n = n + count else print("[GunSwap] vehicle part failed: " .. tostring(count)) end
                 end
             end
-            G.stats.vehicles = G.stats.vehicles + 1
             if n > 0 then
+                G.stats.vehicles = G.stats.vehicles + 1
                 G.stats.replaced = G.stats.replaced + n
-                if vehicle.transmitModData then pcall(vehicle.transmitModData, vehicle) end
                 print("[GunSwap] vehicle " .. tostring(vehicle:getScriptName()) .. ": replaced " .. n .. " item(s)")
+            end
+        end
+    end
+end
+
+-- Players: what they carry, wear and hold. Not while aiming or in the middle of an action, so a
+-- gun never changes mid-shot or mid-reload; it waits for the next sweep.
+local function sweepPlayers()
+    local players = {}
+    if isServer() then
+        local online = getOnlinePlayers()
+        if online then for i = 0, online:size() - 1 do players[#players + 1] = online:get(i) end end
+    else
+        for i = 0, getNumActivePlayers() - 1 do
+            local p = getSpecificPlayer(i)
+            if p then players[#players + 1] = p end
+        end
+    end
+    local o, rng = Loot.options(), Loot.rng
+    for _, player in ipairs(players) do
+        local busy = player:isDead() or player:isAiming()
+        if not busy then
+            local okActions, actions = pcall(player.getCharacterActions, player)
+            if okActions and actions and not actions:isEmpty() then busy = true end
+        end
+        if not busy then
+            local ok, n = pcall(G.container, player:getInventory(), "civil", o, rng, 0, player)
+            if not ok then
+                print("[GunSwap] player sweep failed: " .. tostring(n))
+            elseif n > 0 then
+                G.stats.replaced = G.stats.replaced + n
+                G.stats.people = G.stats.people + n
+                if isServer() then pcall(sendEquip, player) end
+                if ISInventoryPage and ISInventoryPage.dirtyUI then pcall(ISInventoryPage.dirtyUI) end
+                print("[GunSwap] player " .. tostring(player:getUsername()) .. ": replaced " .. n .. " item(s)")
             end
         end
     end
@@ -343,6 +494,7 @@ end
 local function onFillContainer(roomName, containerType, container)
     -- Some fills hand over the loot table entry instead of the container: skip those.
     if not container or not instanceof(container, "ItemContainer") then return end
+    G.stats.fills = G.stats.fills + 1
     local ctx = Loot.placeOf("rooms/" .. tostring(roomName)) or "civil"
     local ok, n = pcall(G.container, container, ctx, Loot.options(), Loot.rng, 0)
     if not ok then
@@ -360,18 +512,24 @@ local function onTick()
     if head <= tail then pump(SQUARES_PER_TICK) end
 end
 
+local function guarded(what, fn)
+    local ok, err = pcall(fn)
+    if not ok then print("[GunSwap] " .. what .. " failed: " .. tostring(err)) end
+end
+
 local minutes = 0
 local function everyMinute()
     minutes = minutes + 1
     if getTimestampMs() - lastTickMs > 5000 and head <= tail then pump(2000) end
-    if minutes % 2 == 0 then
-        local ok, err = pcall(sweepVehicles)
-        if not ok then print("[GunSwap] vehicle sweep failed: " .. tostring(err)) end
+    if minutes % 2 == 0 then guarded("player sweep", sweepPlayers) end
+    if minutes % 10 == 0 then
+        guarded("vehicle sweep", sweepVehicles)
+        guarded("chunk retry", retryChunks)
     end
     if minutes % 60 == 0 then
         local s = G.stats
-        print(string.format("[GunSwap] so far: %d chunks, %d vehicles, %d replaced, %d cases emptied, %d left alone, %d chunks waiting",
-            s.chunks, s.vehicles, s.replaced, s.unwrapped, s.kept, tail - head + 1))
+        print(string.format("[GunSwap] so far: %d chunks done, %d chunk passes with unfilled containers, %d fresh fills, %d old gun items seen, %d replaced (%d on players, %d loose rounds boxed), %d cases emptied, %d left alone, %d chunks waiting",
+            s.chunks, s.waiting, s.fills, s.seen, s.replaced, s.people, s.boxed, s.unwrapped, s.kept, tail - head + 1))
     end
 end
 

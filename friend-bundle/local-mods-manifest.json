@@ -169,11 +169,11 @@
     },
     {
         "path":  "GunSwap\\42\\media\\lua\\server\\GunSwap.lua",
-        "sha256":  "f5a455f2704e8861ed9e159f894e897254dc001b6293575f4ccec5cb739d3b3a"
+        "sha256":  "89790fa5e0941c628c82eac7128b4c69b8f11b35a5bf543f697a5a28865e5476"
     },
     {
         "path":  "GunSwap\\42\\mod.info",
-        "sha256":  "d7065cb9ad5f1204976280fc6d7acfd154725dea98e004b34077be73ec2bf81a"
+        "sha256":  "42de5f282f99e445bc75c78bb47f6c157e1f663ddabaedf138ef91256399d870"
     },
     {
         "path":  "GunSwap\\common\\.keep",
