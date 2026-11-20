@@ -1,0 +1,7 @@
+name=EFZ Boxes Only
+id=EFZBoxesOnly
+author=Tanner / DioGenerations
+modversion=1.0.0
+versionMin=42.0.0
+loadModAfter=\EscapeFromZomboidFirearms
+description=Escape From Zomboid Firearms loot never spawns single loose rounds. Each loose round it would have made counts toward a full box instead, so the total amount of ammo stays about the same. Needs Escape From Zomboid Firearms.

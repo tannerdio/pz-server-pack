@@ -156,6 +156,18 @@
         "sha256":  "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068"
     },
     {
+        "path":  "EFZBoxesOnly\\42\\media\\lua\\shared\\EFZBoxesOnly.lua",
+        "sha256":  "8e6b5d29797f9d6cfbec777cfa7becd9316854b6de4c1f514c8b98b8503c5559"
+    },
+    {
+        "path":  "EFZBoxesOnly\\42\\mod.info",
+        "sha256":  "74f74b7fc6389b3f9a3db8d1417a7d69951bd7ae51c41111c2fb93668ab6b133"
+    },
+    {
+        "path":  "EFZBoxesOnly\\common\\.keep",
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
         "path":  "GunSwap\\42\\media\\lua\\server\\GunSwap.lua",
         "sha256":  "f5a455f2704e8861ed9e159f894e897254dc001b6293575f4ccec5cb739d3b3a"
     },
