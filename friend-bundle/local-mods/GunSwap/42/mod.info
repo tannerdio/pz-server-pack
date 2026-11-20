@@ -1,6 +1,6 @@
 name=Gun Swap
 id=GunSwap
 author=Tanner / DioGenerations
-modversion=1.1.0
+modversion=1.2.0
 versionMin=42.0.0
 description=Turns base-game and Vanilla Firearms Expansion guns, magazines, attachments and ammo that already spawned in the world into Escape From Zomboid Firearms ones, area by area as the map loads. Also what players carry (not mid-shot or mid-action), and packs loose EFZ rounds lying around into boxes. Needs Escape From Zomboid Firearms.

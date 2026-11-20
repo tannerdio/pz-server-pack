@@ -24,7 +24,7 @@ end
 GunSwap = GunSwap or {}
 local G = GunSwap
 G.VERSION = 2
-G.stats = { chunks = 0, waiting = 0, fills = 0, vehicles = 0, seen = 0, replaced = 0, people = 0, boxed = 0, kept = 0, unwrapped = 0 }
+G.stats = { chunks = 0, waiting = 0, fills = 0, vehicles = 0, seen = 0, replaced = 0, people = 0, zombies = 0, boxed = 0, kept = 0, unwrapped = 0 }
 
 -- VFE item (and Improvised Silencers part) -> the base-game item whose EFZ replacement it gets.
 -- Base-game names that VFE merely overrides (Shotgun, Pistol, AssaultRifle, ...) are already in
@@ -426,6 +426,67 @@ local function retryChunks()
     for key, c in pairs(list) do enqueue(key, c.cx, c.cy, 0) end
 end
 
+-- Around each player everything is looked at again, done or not: corpses that fell since, things
+-- dropped or put away since, and containers the game filled without telling anyone.
+local NEAR = 3
+local function rescanNearPlayers(players)
+    for _, player in ipairs(players) do
+        local cx, cy = math.floor(player:getX() / CHUNK), math.floor(player:getY() / CHUNK)
+        for dx = -NEAR, NEAR do
+            for dy = -NEAR, NEAR do
+                enqueue((cx + dx) .. "," .. (cy + dy), cx + dx, cy + dy, 0)
+            end
+        end
+    end
+end
+
+local function allPlayers()
+    local players = {}
+    if isServer() then
+        local online = getOnlinePlayers()
+        if online then for i = 0, online:size() - 1 do players[#players + 1] = online:get(i) end end
+    else
+        for i = 0, getNumActivePlayers() - 1 do
+            local p = getSpecificPlayer(i)
+            if p then players[#players + 1] = p end
+        end
+    end
+    return players
+end
+
+-- A zombie that dies with an old gun on its back or belt: the gun is swapped where it hangs, so
+-- the corpse shows and holds the new one.
+local function onZombieDead(zombie)
+    if not zombie or not zombie.getAttachedItems then return end
+    local attached = zombie:getAttachedItems()
+    if not attached then return end
+    local list = {}
+    for i = 0, attached:size() - 1 do
+        local a = attached:get(i)
+        if a and a:getItem() then list[#list + 1] = { item = a:getItem(), location = a:getLocation() } end
+    end
+    local o, rng = Loot.options(), Loot.rng
+    for _, a in ipairs(list) do
+        local anchor = anchorOf(a.item:getFullType())
+        if anchor then
+            G.stats.seen = G.stats.seen + 1
+            local new = replacements(a.item, anchor, "civil", o, rng, nil)
+            if new and new[1] then
+                local inventory = zombie:getInventory()
+                if inventory and inventory:contains(a.item) then
+                    inventory:Remove(a.item)
+                    inventory:AddItem(new[1])
+                end
+                zombie:setAttachedItem(a.location, new[1])
+                G.stats.replaced = G.stats.replaced + 1
+                G.stats.zombies = G.stats.zombies + 1
+            else
+                G.stats.kept = G.stats.kept + 1
+            end
+        end
+    end
+end
+
 -- Vehicles: trunks, glove boxes and seats, every sweep (their loot also arrives late).
 local function sweepVehicles()
     local set = getCell() and getCell():getVehicles()
@@ -458,16 +519,7 @@ end
 -- Players: what they carry, wear and hold. Not while aiming or in the middle of an action, so a
 -- gun never changes mid-shot or mid-reload; it waits for the next sweep.
 local function sweepPlayers()
-    local players = {}
-    if isServer() then
-        local online = getOnlinePlayers()
-        if online then for i = 0, online:size() - 1 do players[#players + 1] = online:get(i) end end
-    else
-        for i = 0, getNumActivePlayers() - 1 do
-            local p = getSpecificPlayer(i)
-            if p then players[#players + 1] = p end
-        end
-    end
+    local players = allPlayers()
     local o, rng = Loot.options(), Loot.rng
     for _, player in ipairs(players) do
         local busy = player:isDead() or player:isAiming()
@@ -525,16 +577,21 @@ local function everyMinute()
     if minutes % 10 == 0 then
         guarded("vehicle sweep", sweepVehicles)
         guarded("chunk retry", retryChunks)
+        guarded("near rescan", function() rescanNearPlayers(allPlayers()) end)
     end
     if minutes % 60 == 0 then
         local s = G.stats
-        print(string.format("[GunSwap] so far: %d chunks done, %d chunk passes with unfilled containers, %d fresh fills, %d old gun items seen, %d replaced (%d on players, %d loose rounds boxed), %d cases emptied, %d left alone, %d chunks waiting",
-            s.chunks, s.waiting, s.fills, s.seen, s.replaced, s.people, s.boxed, s.unwrapped, s.kept, tail - head + 1))
+        print(string.format("[GunSwap] so far: %d chunks done, %d chunk passes with unfilled containers, %d fresh fills, %d old gun items seen, %d replaced (%d on players, %d on dying zombies, %d loose rounds boxed), %d cases emptied, %d left alone, %d chunks waiting",
+            s.chunks, s.waiting, s.fills, s.seen, s.replaced, s.people, s.zombies, s.boxed, s.unwrapped, s.kept, tail - head + 1))
     end
 end
 
 Events.LoadGridsquare.Add(onLoadGridsquare)
 Events.OnFillContainer.Add(onFillContainer)
+Events.OnZombieDead.Add(function(zombie)
+    local ok, err = pcall(onZombieDead, zombie)
+    if not ok then print("[GunSwap] zombie failed: " .. tostring(err)) end
+end)
 Events.OnTick.Add(onTick)
 Events.EveryOneMinute.Add(everyMinute)
 

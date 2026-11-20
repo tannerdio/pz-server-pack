@@ -31,7 +31,7 @@ Added 2026-11-13, a new weapon pack:
 | `local-mods\EFZAdsCompat\` | EFZ x Viewpoint ADS compat 1.0.0, also the other player's own mod |
 | `local-mods\CoopFastForward\` | Co-op Fast Forward 1.1.0, also the other player's own mod |
 | `local-mods\VPCursorKeep\` | Viewpoint cursor keep 1.0.0, also the other player's own mod |
-| `local-mods\GunSwap\` | Gun Swap 1.1.0, also the other player's own mod |
+| `local-mods\GunSwap\` | Gun Swap 1.2.0, also the other player's own mod |
 | `local-mods\EFZBoxesOnly\` | EFZ Boxes Only 1.0.0, also the other player's own mod |
 | `local-mods-manifest.json` | sha256 of every file under `local-mods\` |
 | `default.txt` | The other player's enabled mod list (201 mods), from `%UserProfile%\Zomboid\mods\default.txt` |
