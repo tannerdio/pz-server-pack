@@ -172,7 +172,6 @@ mods
     mod = CarEnterExitFix,
     mod = ViewpointFences3D,
     mod = ViewpointAdvancedThrowables,
-    mod = ViewpointBarricade,
     mod = ViewpointClassicCamera,
     mod = ViewpointProperRoofs,
     mod = ViewpointVisibleLoot,
