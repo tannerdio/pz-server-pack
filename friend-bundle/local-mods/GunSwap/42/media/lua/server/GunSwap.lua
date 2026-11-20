@@ -2,8 +2,8 @@
 --
 -- Escape From Zomboid Firearms (EFZ) already replaces base-game guns and ammo, but only in rooms
 -- nobody has seen yet, and it does not know the Vanilla Firearms Expansion (VFE) items at all.
--- This replaces unwanted guns, magazines, attachments and ammo with EFZ items of the same kind,
--- using EFZ's own loot draw, in: every chunk as it loads (furniture, floor, corpses; again until
+-- This replaces unwanted guns, magazines, attachments and ammo with EFZ items of the same kind
+-- and, for guns, magazines and ammo, the same calibre, using EFZ's own loot draw, in: every chunk as it loads (furniture, floor, corpses; again until
 -- all its containers have their loot), every vehicle, every freshly filled container, and what
 -- players carry. Loose EFZ rounds lying in the world are packed into boxes on the way.
 
@@ -15,8 +15,9 @@ end
 
 local okLoot, Loot = pcall(require, "TW/Loot")
 local okItems, LI = pcall(require, "TW/LootItems")
+local okData, D = pcall(require, "TW/Data")
 pcall(require, "TW_LootFill")
-if not okLoot or not okItems or type(Loot) ~= "table" or type(LI) ~= "table" then
+if not okLoot or not okItems or not okData or type(Loot) ~= "table" or type(LI) ~= "table" or type(D) ~= "table" then
     print("[GunSwap] could not load the EFZ loot modules; nothing to do.")
     return
 end
@@ -24,7 +25,7 @@ end
 GunSwap = GunSwap or {}
 local G = GunSwap
 G.VERSION = 3
-G.stats = { chunks = 0, waiting = 0, fills = 0, vehicles = 0, seen = 0, replaced = 0, people = 0, zombies = 0, boxed = 0, kept = 0, unwrapped = 0 }
+G.stats = { chunks = 0, waiting = 0, fills = 0, vehicles = 0, seen = 0, replaced = 0, people = 0, zombies = 0, boxed = 0, kept = 0, unwrapped = 0, byCal = 0, skipped = 0 }
 
 -- VFE item (and Improvised Silencers part) -> the base-game item whose EFZ replacement it gets.
 -- Base-game names that VFE merely overrides (Shotgun, Pistol, AssaultRifle, ...) are already in
@@ -95,6 +96,164 @@ UNWRAP["Base.VFESRifleCase1"] = true
 UNWRAP["Base.VFEP93PistolCase1"] = true
 UNWRAP["Base.VFEP93RifleCase1"] = true
 
+-- Calibre -------------------------------------------------------------------------------------
+-- A swapped gun keeps its calibre, its magazines become magazines of the gun it turned into (or
+-- at least of that calibre), and its ammo becomes the ordinary round of that calibre. Values are
+-- EFZ calibre keys. Old calibres EFZ does not have (.22, .30-30) are not listed and get EFZ's
+-- usual draw; .38 and .44 go to .357, the only revolver round EFZ has.
+-- Old ammo box (what a gun's script names as its box) -> calibre.
+local BOXCAL = {
+    Bullets9mmBox = "9mm", Bullets45Box = "45", Bullets44Box = "357", Bullets38Box = "357",
+    Bullets357Box = "357", ["556Box"] = "556", ["223Box"] = "556", ["308Box"] = "308",
+    ShotgunShellsBox = "12ga", ["762Box"] = "762x39", ["545Box"] = "545", ["76254Box"] = "762x54R",
+    ["46Box"] = "46x30", ["57Box"] = "57x28",
+}
+-- Old ammo item -> { calibre, form }.
+local AMMOCAL = {}
+local function ammo(cal, loose, box, carton, pack)
+    if loose then AMMOCAL["Base." .. loose] = { cal, "loose" } end
+    if box then AMMOCAL["Base." .. box] = { cal, "box" } end
+    if carton then AMMOCAL["Base." .. carton] = { cal, "carton" } end
+    if pack then AMMOCAL["Base." .. pack] = { cal, "box" } end
+end
+ammo("9mm", "Bullets9mm", "Bullets9mmBox", "Bullets9mmCarton")
+ammo("45", "Bullets45", "Bullets45Box", "Bullets45Carton")
+ammo("357", "Bullets357", "Bullets357Box", "Bullets357Carton")
+ammo("357", "Bullets38", "Bullets38Box", "Bullets38Carton")
+ammo("357", "Bullets44", "Bullets44Box", "Bullets44Carton")
+ammo("556", "556Bullets", "556Box", "556Carton", "556BattlePack")
+ammo("556", "223Bullets", "223Box", "223Carton")
+ammo("308", "308Bullets", "308Box", "308Carton")
+ammo("308", "308BulletsLinked")
+ammo("12ga", "ShotgunShells", "ShotgunShellsBox", "ShotgunShellsCarton")
+ammo("762x39", "762Bullets", "762Box", "762Carton")
+ammo("545", "545Bullets", "545Box", "545Carton")
+ammo("762x54R", "76254Bullets", "76254Box", "76254Carton")
+ammo("46x30", "46Bullets", "46Box", "46Carton")
+ammo("57x28", "57Bullets", "57Box", "57Carton")
+-- Old magazine -> calibre (only the ones whose calibre is certain).
+local MAGCAL = {}
+local function mags(cal, names)
+    for _, name in ipairs(names) do MAGCAL["Base." .. name] = cal end
+end
+mags("9mm", { "9mmClip", "9mmClip30", "9mmClip32", "9mmClip20", "9mmClip13", "9mmClip16", "9mmClip17",
+    "9mmClip302", "9mmClip33v", "9mmClip8" })
+mags("45", { "45Clip", "45Clip32", "45Clip12", "45Clip25", "45Clip30v" })
+mags("357", { "44Clip" })
+mags("556", { "556Clip", "223Clip20", "556box100" })
+mags("308", { "M14Clip", "308Clip", "FALClip", "M60Belt", "scar17clip" })
+mags("762x39", { "762Clip" })
+mags("545", { "545Clip" })
+mags("12ga", { "12Clip5", "12Clip32" })
+mags("46x30", { "46Clip40" })
+mags("57x28", { "57Clip50", "57Clip20" })
+mags("9x39", { "939Clip10" })
+
+local function base(name)
+    return (string.gsub(tostring(name or ""), "^Base%.", ""))
+end
+
+local function calOfWeapon(item)
+    local ok, box = pcall(item.getAmmoBox, item)
+    if not ok or not box then return nil end
+    return BOXCAL[base(box)]
+end
+
+local function calOfEFZ(item)
+    local key = instanceof(item, "HandWeapon") and D.byType and D.byType[item:getFullType()]
+    return key and D.weapons[key] and D.weapons[key].ammoKey or nil
+end
+
+-- If the anchor's own classes have no gun of the calibre at this place: these classes, in order.
+local OTHER = {
+    pistol = { "pistol", "smg" },
+    shotgun = { "shotgun" },
+    rifle = { "rifle", "smg", "battle", "sniper", "mg" },
+    sniper = { "sniper", "battle", "rifle" },
+}
+
+-- EFZ's weapon draw for the anchor at the place, narrowed to one calibre.
+local function weaponOfCal(anchor, cal, ctx, o, rng)
+    local a = Loot.data.anchors[base(anchor)]
+    if not a or a.family ~= "weapon" then return nil end
+    local list, total = {}, 0
+    local draw = Loot.weaponDraw(a.kind, ctx, o)
+    for _, cls in ipairs(draw.list) do
+        if cls.total > 0 then
+            for _, e in ipairs(cls.items) do
+                local def = D.weapons[e.key]
+                if def and def.ammoKey == cal and e.w > 0 then
+                    local w = cls.w * e.w / cls.total
+                    list[#list + 1] = { key = e.key, w = w, cls = cls.cls }
+                    total = total + w
+                end
+            end
+        end
+    end
+    if total <= 0 then
+        for _, cls in ipairs(OTHER[a.kind] or {}) do
+            for _, key in ipairs(Loot.data.classes[cls] or {}) do
+                local def = D.weapons[key]
+                if def and def.ammoKey == cal then
+                    list[#list + 1] = { key = key, w = 1, cls = cls }
+                    total = total + 1
+                end
+            end
+            if total > 0 then break end
+        end
+    end
+    if total <= 0 then return nil end
+    local e = Loot.pick(list, total, rng)
+    return { type = D.weapons[e.key].pz, weapon = e.key, count = 1, kind = a.kind, ctx = ctx, class = e.cls }
+end
+
+-- A magazine of the calibre: the one the gun of that calibre in the same inventory takes
+-- (memo), else one drawn from EFZ's magazines of that calibre.
+local function magazineOfCal(anchor, cal, o, rng, memo)
+    if memo and memo.mag[cal] then return { type = memo.mag[cal], cal = cal, count = 1 } end
+    local a = Loot.data.anchors[base(anchor)]
+    local first = a and a.family == "magazine" and a.kind or "magPistol"
+    for _, kind in ipairs({ first, first == "magPistol" and "magRifle" or "magPistol" }) do
+        local list, total = {}, 0
+        for _, e in ipairs(Loot.magazineDraw(kind, o).list) do
+            if e.cal == cal then
+                list[#list + 1] = e
+                total = total + e.w
+            end
+        end
+        if total > 0 then
+            local e = Loot.pick(list, total, rng)
+            if memo then memo.mag[cal] = e.type end
+            return { type = e.type, tpl = e.tpl, cal = e.cal, count = 1, kind = kind }
+        end
+    end
+    return nil
+end
+
+-- The ordinary round of the calibre in the old item's form. "keep": the item already is that.
+local function ammoOfCal(item, cal, form, o)
+    local row = Loot.stdRow(cal, o)
+    if not row then return nil end
+    local round, box = Loot.roundItem(row, "loose", o), Loot.roundItem(row, "box", o)
+    if not round or not box then return nil end
+    local fullType = item:getFullType()
+    if form == "loose" then
+        if fullType == round then return "keep" end
+        local perBox = tonumber(row.perBox) or 0
+        if Loot.EFZBoxesOnly and not row.launcher and perBox > 1 and box ~= round then
+            return { type = box, cal = cal, count = 1, form = "box", roundsPerBox = perBox }
+        end
+        return { type = round, cal = cal, count = 1, form = "loose" }
+    end
+    if fullType == box then return "keep" end
+    if form == "carton" then
+        -- a carton of a round that stays as it is stays a carton
+        if base(box) == (string.gsub(base(fullType), "Carton$", "Box")) then return "keep" end
+        return { type = box, cal = cal, count = Loot.data.cartonBoxes or 12, form = "carton" }
+    end
+    return { type = box, cal = cal, count = 1, form = "box" }
+end
+
 local function anchorOf(fullType)
     local anchor = ANCHOR[fullType]
     if anchor then return anchor end
@@ -108,12 +267,28 @@ G.anchorOf = anchorOf
 -- Returns the new items and whether the old item goes. nil: EFZ has nothing for it, it stays.
 -- An empty list that still removes the item is a loose round that lost its draw for a box
 -- (EFZ Boxes Only pays loose rounds out in boxes by chance).
-local function replacements(item, anchor, ctx, o, rng, choices)
+-- memo: per inventory, the magazine type each calibre's gun takes (see G.container).
+local function replacements(item, anchor, ctx, o, rng, choices, memo)
     local isWeapon = instanceof(item, "HandWeapon")
     local key = item:getFullType()
     local choice = (not isWeapon) and choices and choices[key] or nil
     if not choice then
-        choice = Loot.replacement(anchor, ctx, o, rng, true)
+        local ok, byCal
+        if isWeapon then
+            local cal = calOfWeapon(item)
+            if cal then ok, byCal = pcall(weaponOfCal, anchor, cal, ctx, o, rng) end
+        elseif MAGCAL[key] then
+            ok, byCal = pcall(magazineOfCal, anchor, MAGCAL[key], o, rng, memo)
+        elseif AMMOCAL[key] then
+            ok, byCal = pcall(ammoOfCal, item, AMMOCAL[key][1], AMMOCAL[key][2], o)
+        end
+        if ok == false then
+            print("[GunSwap] calibre pick failed for " .. key .. ": " .. tostring(byCal))
+            byCal = nil
+        end
+        if byCal == "keep" then return nil end
+        if byCal then G.stats.byCal = G.stats.byCal + 1 end
+        choice = byCal or Loot.replacement(anchor, ctx, o, rng, true)
         if not choice then return nil end
         if choices and not isWeapon then choices[key] = choice end
     end
@@ -121,6 +296,8 @@ local function replacements(item, anchor, ctx, o, rng, choices)
     if isWeapon then
         local weapon = items[1]
         if weapon and instanceof(weapon, "HandWeapon") then
+            local cal = memo and calOfEFZ(weapon)
+            if cal and not memo.mag[cal] then memo.mag[cal] = LI.weaponMagazine(weapon) end
             LI.condition(item, weapon)
             local max = item:getMaxAmmo() or 0
             local loaded = (max > 0 and item:getCurrentAmmoCount() > 0) and math.min(1, item:getCurrentAmmoCount() / max) or 0
@@ -201,18 +378,31 @@ end
 -- One container and the bags in it. Returns how many items were replaced.
 -- who: set when this is a player's inventory; loose EFZ rounds a player carries are left alone
 -- (they are what you load magazines from).
-function G.container(container, ctx, o, rng, depth, who)
+-- memo: shared by a container and the bags in it. Guns go first, so the magazines that follow
+-- can match them; EFZ guns already there count too.
+function G.container(container, ctx, o, rng, depth, who, memo)
     depth = depth or 0
     if not container or depth > 3 then return 0 end
+    memo = memo or { mag = {} }
     local items = container:getItems()
-    local list = {}
-    for i = 0, items:size() - 1 do list[#list + 1] = items:get(i) end
+    local list, rest = {}, {}
+    for i = 0, items:size() - 1 do
+        local item = items:get(i)
+        if instanceof(item, "HandWeapon") then
+            list[#list + 1] = item
+            local cal = calOfEFZ(item)
+            if cal and not memo.mag[cal] then memo.mag[cal] = LI.weaponMagazine(item) end
+        else
+            rest[#rest + 1] = item
+        end
+    end
+    for _, item in ipairs(rest) do list[#list + 1] = item end
     local choices, n = {}, 0
     for _, item in ipairs(list) do
         local fullType = item:getFullType()
         if instanceof(item, "InventoryContainer") then
             local inner = item:getInventory()
-            n = n + G.container(inner, ctx, o, rng, depth + 1, who)
+            n = n + G.container(inner, ctx, o, rng, depth + 1, who, memo)
             if UNWRAP[fullType] and inner then
                 local innerItems, moved = inner:getItems(), {}
                 for i = 0, innerItems:size() - 1 do moved[#moved + 1] = innerItems:get(i) end
@@ -227,7 +417,7 @@ function G.container(container, ctx, o, rng, depth, who)
             local anchor = anchorOf(fullType)
             if anchor then
                 G.stats.seen = G.stats.seen + 1
-                local new = replacements(item, anchor, ctx, o, rng, choices)
+                local new = replacements(item, anchor, ctx, o, rng, choices, memo)
                 if new then
                     removeFrom(container, item, who)
                     for _, r in ipairs(new) do addTo(container, r) end
@@ -399,12 +589,29 @@ local function chunkPart(job, budget)
     return i >= total, budget
 end
 
+-- A chunk that has unloaded since it was queued (a long drive queues thousands) is dropped at
+-- once instead of being walked square by square, so the chunks around the player are not kept
+-- waiting behind it.
+local function chunkLoaded(job)
+    local cell = getCell()
+    if not cell then return false end
+    local x, y = job.cx * CHUNK, job.cy * CHUNK
+    return cell:getGridSquare(x, y, 0) ~= nil or cell:getGridSquare(x + 4, y + 4, 0) ~= nil
+        or cell:getGridSquare(x + 7, y + 7, 0) ~= nil
+end
+
 local function pump(budget)
     local now = getTimestampMs()
     local marks
     while head <= tail and budget > 0 and queue[head].at <= now do
         local job = queue[head]
-        local ok, finished, left = pcall(chunkPart, job, budget)
+        local ok, finished, left
+        if not job.next and not chunkLoaded(job) then
+            ok, finished, left = true, true, budget - 1
+            G.stats.skipped = G.stats.skipped + 1
+        else
+            ok, finished, left = pcall(chunkPart, job, budget)
+        end
         if not ok then
             print("[GunSwap] chunk " .. job.key .. " failed: " .. tostring(finished))
             finished, left = true, budget
@@ -606,8 +813,8 @@ local function everyMinute()
     end
     if minutes % 60 == 0 then
         local s = G.stats
-        print(string.format("[GunSwap] so far: %d chunks done, %d chunk passes with unfilled containers, %d fresh fills, %d old gun items seen, %d replaced (%d on players, %d on dying zombies, %d loose rounds boxed), %d cases emptied, %d left alone, %d chunks waiting",
-            s.chunks, s.waiting, s.fills, s.seen, s.replaced, s.people, s.zombies, s.boxed, s.unwrapped, s.kept, tail - head + 1))
+        print(string.format("[GunSwap] so far: %d chunks done, %d chunk passes with unfilled containers, %d fresh fills, %d old gun items seen, %d replaced (%d on players, %d on dying zombies, %d loose rounds boxed), %d cases emptied, %d left alone, %d picked by calibre, %d chunks waiting, %d unloaded chunks skipped",
+            s.chunks, s.waiting, s.fills, s.seen, s.replaced, s.people, s.zombies, s.boxed, s.unwrapped, s.kept, s.byCal, tail - head + 1, s.skipped))
     end
 end
 

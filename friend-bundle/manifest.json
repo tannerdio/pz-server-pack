@@ -64,17 +64,5 @@
         "kind":  "mod.info",
         "original_sha256":  "0c957cfc1186cc578207070dcc82b5cd413b81e668f7c1dae74968d2a80a0d93",
         "patched_sha256":  "b7fd138d443e7dc474680f77c1f5ab818594949b93dc90bc5aea2ff23b4b5f51"
-    },
-    {
-        "path":  "3815630947\\mods\\ViewpointRollingHills\\42\\mod.info",
-        "kind":  "mod.info",
-        "original_sha256":  "47e2e5283599359f3c0c233dd35e4e02c8fdd179a4e5573c158a7b67ac8ae1af",
-        "patched_sha256":  "ca788de674b8f888845f9a78e85d95a06db813756ef14ba251b5c09591d4182f"
-    },
-    {
-        "path":  "3817555882\\mods\\RollingHillsPhysics\\42\\mod.info",
-        "kind":  "mod.info",
-        "original_sha256":  "3587efc4be2508b5fd9e9684e0f80f80fe0568acdd82c82126c2638b60c28631",
-        "patched_sha256":  "2455b24a0d54788e50e02cb004a78091520b58bf64d8b9d7828cfcfe15a847f7"
     }
 ]
