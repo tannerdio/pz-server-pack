@@ -180,6 +180,22 @@
         "sha256":  "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
     },
     {
+        "path":  "KeepSkills\\42\\media\\lua\\client\\KeepSkills_Client.lua",
+        "sha256":  "7f15d44b0a6f8bcea6a6a3a7f140a5d6aedf783e81fcd90e07a6645b60d2294e"
+    },
+    {
+        "path":  "KeepSkills\\42\\media\\lua\\server\\KeepSkills_Server.lua",
+        "sha256":  "541fc386f27c0d71849d61666346c637f7b9a134549d687470d7383f5be0764a"
+    },
+    {
+        "path":  "KeepSkills\\42\\mod.info",
+        "sha256":  "a2fbe10719c3a83f084264d03ec244c017e1cc576588553338fb4693e5c63a0f"
+    },
+    {
+        "path":  "KeepSkills\\common\\.keep",
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
         "path":  "VPCursorKeep\\42\\media\\lua\\client\\VPCursorKeep.lua",
         "sha256":  "ea8796f406b578fce9563f5b07eb2ea179cd994ac075e72a9f234d46eb1a141f"
     },

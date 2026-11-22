@@ -196,6 +196,7 @@ mods
     mod = EscapeFromZomboidFirearms,
     mod = EFZAdsCompat,
     mod = EFZBoxesOnly,
+    mod = KeepSkills,
     mod = CoopFastForward,
     mod = VPCursorKeep,
     mod = GunSwap,
