@@ -1,6 +1,6 @@
 name=Keep Skills
 id=KeepSkills
 author=Tanner / DioGenerations
-modversion=1.0.0
+modversion=1.1.0
 versionMin=42.0.0
-description=Multiplayer: skills belong to the player account, not the character. The server remembers the best XP each account has reached in every skill and gives it back to a new character after a death.
+description=Multiplayer: skills you earn stay with your account. When a character dies, the XP it earned (not the skills it started with) is banked by the server and added on top of the next character's own starting skills, life after life.

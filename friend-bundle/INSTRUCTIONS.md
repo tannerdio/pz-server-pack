@@ -18,7 +18,7 @@ Added 2026-11-13, a new weapon pack:
 - **Viewpoint cursor keep** (`VPCursorKeep`), a small local mod that stops Project Viewpoint QOL from re-locking the mouse (and resetting the cursor to screen centre) when a right-click menu closes while the inventory is still open. It ships in this folder.
 - **Gun Swap** (`GunSwap`), a small local mod that runs on the server and turns the old guns, magazines, attachments and ammo into the new weapon pack's items: lying around the world, in vehicles and in what players carry. It also packs loose single rounds of the new pack lying around into boxes. It ships in this folder; the files must be present on this machine too because the server checks them.
 - **EFZ Boxes Only** (`EFZBoxesOnly`), a small local mod that stops the new weapon pack's loot from spawning single loose rounds; ammo comes in boxes instead, about the same total amount. It ships in this folder; the files must match the host's.
-- **Keep Skills** (`KeepSkills`), a small local mod for the second server: the server remembers the best skill levels each player account has reached and gives them back to a new character after a death. It ships in this folder; the files must match the host's.
+- **Keep Skills** (`KeepSkills`), a small local mod for the second server: when a character dies, the server banks the XP it earned (not the skills it started with) and adds it on top of the next character's own starting skills. It ships in this folder; the files must match the host's.
 - **Attachments UI** (`AttachmentsUI`, Workshop 3816324722) is removed from the mod list. It took over the attachment menu of the new pack's guns and froze the host's game. The user can stay subscribed; it just must not be enabled.
 - **True Ballistics** (`ViewpointTrueBallistics`) is switched off in the mod list. It disables itself on 42.22.2, and while it is enabled the new weapon pack turns its own ballistics off. Its patched jar stays in the manifest and should still be applied, so the files match.
 
@@ -34,7 +34,7 @@ Added 2026-11-13, a new weapon pack:
 | `local-mods\VPCursorKeep\` | Viewpoint cursor keep 1.0.0, also the other player's own mod |
 | `local-mods\GunSwap\` | Gun Swap 1.3.0, also the other player's own mod |
 | `local-mods\EFZBoxesOnly\` | EFZ Boxes Only 1.0.0, also the other player's own mod |
-| `local-mods\KeepSkills\` | Keep Skills 1.0.0, also the other player's own mod |
+| `local-mods\KeepSkills\` | Keep Skills 1.1.0, also the other player's own mod |
 | `local-mods-manifest.json` | sha256 of every file under `local-mods\` |
 | `default.txt` | The other player's enabled mod list (197 mods), from `%UserProfile%\Zomboid\mods\default.txt` |
 | `pzfix.py`, `linkcheck.py` | The scripts that produced the jar patches. Reference and fallback only |

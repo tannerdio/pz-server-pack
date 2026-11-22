@@ -185,11 +185,11 @@
     },
     {
         "path":  "KeepSkills\\42\\media\\lua\\server\\KeepSkills_Server.lua",
-        "sha256":  "541fc386f27c0d71849d61666346c637f7b9a134549d687470d7383f5be0764a"
+        "sha256":  "78d9950ccae8c10248073b44a207a187de8a39a1726727e41ceec6175cee5c7b"
     },
     {
         "path":  "KeepSkills\\42\\mod.info",
-        "sha256":  "a2fbe10719c3a83f084264d03ec244c017e1cc576588553338fb4693e5c63a0f"
+        "sha256":  "bb70cfaac6b59f769aa659ee46e8b60a6d5cbfc3a76016df3382a07ad7eea253"
     },
     {
         "path":  "KeepSkills\\common\\.keep",
