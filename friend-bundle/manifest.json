@@ -36,12 +36,6 @@
         "patched_sha256":  "633b9908c3186e518f6981178c90552a0e33a33c3f6f2b26a261864194badc90"
     },
     {
-        "path":  "3816856700\\mods\\yeahbitch\\42\\media\\java\\client\\PoolPitVP.jar",
-        "kind":  "jar",
-        "original_sha256":  "6373c7557dc90bcf181ff85d466c6f1398403dd3dde0e1f66ddf61b0ea3040e4",
-        "patched_sha256":  "4c61fdb9b0e70fe5c3f55b15dd9c68d1545d3e30ac357e2db7b03d3adce9d9af"
-    },
-    {
         "path":  "3811472160\\mods\\ViewpointBloodFX\\42\\mod.info",
         "kind":  "mod.info",
         "original_sha256":  "25aee0ebe92f35ec325f2611919efbbefdb6f28397d873641115ce9bbafc9986",

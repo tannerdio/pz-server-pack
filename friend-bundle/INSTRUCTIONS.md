@@ -7,7 +7,7 @@ You are being asked to apply a set of file edits to this machine's Project Zombo
 Project Zomboid updated to build 42.22.2. Several Project Viewpoint add-on mods have not been updated by their authors yet, so they were patched by hand on the other machine:
 
 - **4 `mod.info` files (2 mods)** had `versionMax` capped at 42.21, so the game refused to load them. The only change is `versionMax=42.22.999`.
-- **7 mod jars** call `zombie.util.list.PZArrayList`, a class 42.22 removed (`IsoGridSquare.getObjects()` now returns `java.util.List`). The jars were rewritten to use `java.util.List` through a small added helper class, `pzcompat/ListShim`.
+- **6 mod jars** call `zombie.util.list.PZArrayList`, a class 42.22 removed (`IsoGridSquare.getObjects()` now returns `java.util.List`). The jars were rewritten to use `java.util.List` through a small added helper class, `pzcompat/ListShim`.
 - **Mvdox Grass** (`Mvdox-Grass-v1`, Workshop 3815166404) is back on since 2026-11-17 (version 1.1.78, for Viewpoint 0.1.7). It is an unmodified Workshop item: the user subscribes in Steam; the new `default.txt` turns it on.
 
 Added 2026-11-13, a new weapon pack:
@@ -26,7 +26,7 @@ Added 2026-11-13, a new weapon pack:
 
 | Item | Purpose |
 |---|---|
-| `workshop\` | The 11 patched files, laid out exactly as they sit under `steamapps\workshop\content\108600\` |
+| `workshop\` | The 10 patched files, laid out exactly as they sit under `steamapps\workshop\content\108600\` |
 | `manifest.json` | For each file: relative path, sha256 of the unpatched original, sha256 of the patched file |
 | `local-mods\BaseKeeper\` | Base Keeper 0.19.0, the other player's own mod. It is not on the Workshop, so it ships here |
 | `local-mods\EFZAdsCompat\` | EFZ x Viewpoint ADS compat 1.0.0, also the other player's own mod |
@@ -87,14 +87,14 @@ Then the mod list:
 ## Do not touch
 
 - Do not edit `ProjectZomboid64.json`, the `.bat`, or anything in the game folder. Launcher settings are per-machine and not part of this.
-- Do not write to `%UserProfile%\.zombie_buddy\mod_approvals.json`. ZombieBuddy approves mod jars by sha256, so the 7 patched jars and the new weapon pack's jars will prompt for approval at the next launch. The user approves them in game. If the weapon pack's jar is denied, its sights, lasers and ballistics do not work.
+- Do not write to `%UserProfile%\.zombie_buddy\mod_approvals.json`. ZombieBuddy approves mod jars by sha256, so the 6 patched jars and the new weapon pack's jars will prompt for approval at the next launch. The user approves them in game. If the weapon pack's jar is denied, its sights, lasers and ballistics do not work.
 - Do not run Steam "Verify integrity of game files" afterwards. It reverts every patched file.
 
 ## Report back
 
-List each of the 11 files as patched, already patched, mismatched, or missing, whether Base Keeper, EFZAdsCompat, CoopFastForward, VPCursorKeep, GunSwap, EFZBoxesOnly and KeepSkills were installed and verified, whether both weapon pack Workshop items are present and at which version, plus the result of the mod list comparison.
+List each of the 10 files as patched, already patched, mismatched, or missing, whether Base Keeper, EFZAdsCompat, CoopFastForward, VPCursorKeep, GunSwap, EFZBoxesOnly and KeepSkills were installed and verified, whether both weapon pack Workshop items are present and at which version, plus the result of the mod list comparison.
 
-## Reference: the 11 files
+## Reference: the 10 files
 
 Version cap (`versionMax=42.22.999`):
 
@@ -109,11 +109,12 @@ Jar patch:
 - `3813194971` ViewpointAdvancedThrowables.jar
 - `3813908957` ViewpointTrueWeathers.jar
 - `3816442251` ViewpointLivingProps.jar
-- `3816856700` PoolPitVP.jar
 
 "6301 3D models for Viewpoint" (3810302175) was also patched originally, but its author updated it on 2026-11-12 for 42.22.2. It needs no edit; just make sure Steam has the current version.
 
 "Viewpoint - Proper Roofs" (3818941548) was patched too, until its author updated it on 2026-11-16 (0.3.41). It needs no edit now; make sure Steam has the current version. If an old `ProperRoofs.jar.pre-pzfix` is still beside the jar, ignore it and do not copy it back.
+
+"PoolPit" (3816856700) had `PoolPitVP.jar` patched too, until its author updated it on 2026-11-22. It needs no edit now; make sure Steam has the current version. If an old `PoolPitVP.jar.pre-pzfix` is still beside the jar, ignore it and do not copy it back.
 
 "Viewpoint Rolling Hills" (3815630947) and "Rolling Hills Physics" (3817555882) had their `mod.info` patched too, until their author updated both on 2026-11-18 (0.2.31 and 0.1.9). They need no edit now; make sure Steam has the current versions. If an old `mod.info.pre-unpin` is still beside either `mod.info`, ignore it and do not copy it back.
 
