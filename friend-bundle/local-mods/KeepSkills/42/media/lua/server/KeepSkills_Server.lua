@@ -9,11 +9,16 @@
 -- earned moves into the bank. Starting skills of a dead character are never passed on.
 -- The server's copy of a character is the one that gets saved and its XP is pushed to the
 -- client by the game; the client is only told the levels.
+--   know   everything any character of the account has learned or read: recipes, recipe
+--          magazines, pages read per book, magazines/comics (with the day read, so the game's
+--          re-read cooldown still counts), flyers and maps, watched tape and CD lines.
+-- "know" only grows. Every character gets all of it on joining, and the XP multiplier of a
+-- skill book read in an earlier life is put back for the level range that book covers.
 
 if not isServer() then return end
 
 local MOD = "KeepSkills"
-local VERSION = "1.1.0"
+local VERSION = "1.2.0"
 local SEED_FILE = "KeepSkills_seed.txt"
 -- A character is looked at once it is this old (game hours), so its starting skills have
 -- arrived from the client before they are written down.
@@ -113,6 +118,206 @@ local function sendLevels(player, levels)
     sendServerCommand(player, MOD, "apply", { levels = levels })
 end
 
+-- ---------------------------------------------------------------------------------------
+-- Recipes, books, magazines, tapes
+
+local LINES_PER_MESSAGE = 250
+
+local function knowledge(rec)
+    local k = rec.know
+    if not k then
+        k = {}
+        rec.know = k
+    end
+    k.recipes = k.recipes or {}
+    k.books = k.books or {}
+    k.pages = k.pages or {}
+    k.lit = k.lit or {}
+    k.print = k.print or {}
+    k.lines = k.lines or {}
+    return k
+end
+
+-- Every item script with pages: { type, pages, skill, lvl, max }
+local bookList
+local function books()
+    if bookList then return bookList end
+    local list = {}
+    local all = getAllItems()
+    for i = 0, all:size() - 1 do
+        local item = all:get(i)
+        pcall(function()
+            local pages = item:getNumberOfPages()
+            if pages and pages > 0 then
+                table.insert(list, {
+                    type = item:getFullName(), pages = pages, skill = item:getSkillTrained(),
+                    lvl = item:getLevelSkillTrained(), max = item:getMaxLevelTrained(),
+                })
+            end
+        end)
+    end
+    if #list > 0 then bookList = list end
+    return list
+end
+
+-- The text id of every line of every tape and CD.
+local lineList
+local function mediaLines()
+    if lineList then return lineList end
+    local list = {}
+    local media = getZomboidRadio():getRecordedMedia()
+    local cats = media:getCategories()
+    for c = 0, cats:size() - 1 do
+        local all = media:getAllMediaForCategory(cats:get(c))
+        for m = 0, all:size() - 1 do
+            local one = all:get(m)
+            for l = 0, one:getLineCount() - 1 do
+                local guid = one:getLine(l):getTextGuid()
+                if guid and guid ~= "" then table.insert(list, guid) end
+            end
+        end
+    end
+    if #list > 0 then lineList = list end
+    return list
+end
+
+local function part(what, fn)
+    local ok, err = pcall(fn)
+    if not ok then print("[KeepSkills] " .. what .. " failed: " .. tostring(err)) end
+end
+
+-- Write down what this character knows.
+local function learn(player, rec)
+    local k = knowledge(rec)
+    part("reading recipes", function()
+        local list = player:getKnownRecipes()
+        for i = 0, list:size() - 1 do k.recipes[tostring(list:get(i))] = true end
+        list = player:getAlreadyReadBook()
+        for i = 0, list:size() - 1 do k.books[tostring(list:get(i))] = true end
+    end)
+    part("reading book pages", function()
+        for _, b in ipairs(books()) do
+            local read = math.min(player:getAlreadyReadPages(b.type), b.pages)
+            if read > num(k.pages[b.type]) then k.pages[b.type] = read end
+        end
+    end)
+    part("reading magazines", function()
+        local read = player:getReadLiterature()
+        for title in pairs(transformIntoKahluaTable(read)) do
+            local day = num(read:get(title))
+            title = tostring(title)
+            if not k.lit[title] or day > num(k.lit[title]) then k.lit[title] = day end
+        end
+    end)
+    part("reading flyers", function()
+        local list = ArrayList.new(player:getReadPrintMedia())
+        for i = 0, list:size() - 1 do k.print[tostring(list:get(i))] = true end
+    end)
+    part("reading tapes", function()
+        for _, guid in ipairs(mediaLines()) do
+            if not k.lines[guid] and player:isKnownMediaLine(guid) then k.lines[guid] = true end
+        end
+    end)
+end
+
+-- Give this character (the server's copy) everything the account knows.
+local function teach(player, rec)
+    local k = knowledge(rec)
+    local got = 0
+    part("giving recipes", function()
+        local known = player:getKnownRecipes()
+        for name in pairs(k.recipes) do
+            if not known:contains(name) and player:learnRecipe(name) then got = got + 1 end
+        end
+        local read = player:getAlreadyReadBook()
+        for name in pairs(k.books) do
+            if not read:contains(name) then
+                read:add(name)
+                got = got + 1
+            end
+        end
+    end)
+    part("giving book pages", function()
+        for name, pages in pairs(k.pages) do
+            if player:getAlreadyReadPages(name) < num(pages) then
+                player:setAlreadyReadPages(name, num(pages))
+                got = got + 1
+            end
+        end
+    end)
+    part("giving magazines", function()
+        local read = player:getReadLiterature()
+        for title, day in pairs(k.lit) do
+            if not read:containsKey(title) then
+                player:addReadLiterature(title, num(day))
+                got = got + 1
+            end
+        end
+    end)
+    part("giving flyers", function()
+        for id in pairs(k.print) do
+            if not player:isPrintMediaRead(id) then
+                player:addReadPrintMedia(id)
+                got = got + 1
+            end
+        end
+    end)
+    part("giving tapes", function()
+        for guid in pairs(k.lines) do
+            if not player:isKnownMediaLine(guid) then
+                player:addKnownMediaLine(guid)
+                got = got + 1
+            end
+        end
+    end)
+    if got > 0 then
+        -- The game's own sync of recipes (1) and recipe magazines (4) to the client.
+        part("recipe sync", function() sendSyncPlayerFields(player, 5) end)
+        print("[KeepSkills] " .. player:getUsername() .. " got " .. got .. " known things back (recipes, books, tapes)")
+    end
+end
+
+-- The client keeps its own copy of what is read and watched (it draws the "already read"
+-- marks from it) and the game does not send those lists, so send them.
+local function sendKnowledge(player, rec)
+    local k = knowledge(rec)
+    local prints = {}
+    for id in pairs(k.print) do table.insert(prints, id) end
+    sendServerCommand(player, MOD, "know", { pages = k.pages, lit = k.lit, print = prints })
+    local chunk = {}
+    for guid in pairs(k.lines) do
+        table.insert(chunk, guid)
+        if #chunk >= LINES_PER_MESSAGE then
+            sendServerCommand(player, MOD, "lines", { lines = chunk })
+            chunk = {}
+        end
+    end
+    if #chunk > 0 then sendServerCommand(player, MOD, "lines", { lines = chunk }) end
+end
+
+-- A skill book read in an earlier life: put its XP multiplier back while the character is in
+-- the levels that book covers (the game keeps one multiplier per skill).
+local function boost(player, rec)
+    if not SkillBook or not rec.know or not rec.know.pages then return end
+    for _, b in ipairs(books()) do
+        local read = num(rec.know.pages[b.type])
+        local book = read > 0 and b.skill and SkillBook[b.skill]
+        if book and book.perk then
+            local nextLevel = player:getPerkLevel(book.perk) + 1
+            if b.lvl <= nextLevel and nextLevel <= b.max then
+                local most = num(book["maxMultiplier" .. math.floor((b.lvl + 1) / 2)])
+                local mult = math.floor(math.min(read / b.pages, 1) * 10) * (most / 10)
+                if mult > player:getXp():getMultiplier(book.perk) + 0.01 then
+                    addXpMultiplier(player, book.perk, mult, b.lvl, b.max)
+                end
+            end
+        end
+    end
+end
+
+-- ---------------------------------------------------------------------------------------
+-- XP
+
 -- The life is over: what it earned goes to the bank, the next character seen is a new one.
 local function endLife(name, rec, why)
     local text = nil
@@ -139,6 +344,10 @@ local function check(player)
     local hours = player:getHoursSurvived()
     local xp = player:getXp()
     if player:isDead() then
+        if not rec.diedKnow then
+            learn(player, rec)
+            rec.diedKnow = true
+        end
         -- Note the death and the last XP; the life is closed when the next character shows up.
         if rec.start and not rec.diedAt then
             for _, p in ipairs(perks()) do
@@ -149,6 +358,7 @@ local function check(player)
         end
         return nil
     end
+    rec.diedKnow = nil
     if hours < MIN_HOURS or player:isAsleep() then return nil end
 
     -- A new character: hours survived dropped (they only go up within one life), or a death
@@ -195,6 +405,7 @@ local function check(player)
         end
     end
     if text then print("[KeepSkills] " .. name .. " got skills back: " .. text) end
+    part("book multipliers", function() boost(player, rec) end)
     return raised
 end
 
@@ -212,11 +423,33 @@ local function everyMinute()
     end
 end
 
+-- Written down every ten game minutes, when a character dies and when one joins.
+local function everyTenMinutes()
+    local players = getOnlinePlayers()
+    if not players then return end
+    for i = 0, players:size() - 1 do
+        local player = players:get(i)
+        local name = player and player:getUsername()
+        if name and name ~= "" and not player:isDead() then
+            part("writing down what " .. name .. " knows", function() learn(player, account(name)) end)
+        end
+    end
+end
+
 local function onClientCommand(module, command, player, args)
     if module ~= MOD or command ~= "hello" or not player then return end
     local ok, err = pcall(check, player)
     if not ok then print("[KeepSkills] check failed: " .. tostring(err)) end
     sendLevels(player)
+    local name = player:getUsername()
+    if not name or name == "" or player:isDead() then return end
+    part("knowledge for " .. name, function()
+        local rec = account(name)
+        learn(player, rec)
+        teach(player, rec)
+        boost(player, rec)
+        sendKnowledge(player, rec)
+    end)
 end
 
 local function onPlayerDeath(player)
@@ -275,5 +508,6 @@ end
 
 Events.OnInitGlobalModData.Add(onInit)
 Events.EveryOneMinute.Add(everyMinute)
+Events.EveryTenMinutes.Add(everyTenMinutes)
 Events.OnClientCommand.Add(onClientCommand)
 Events.OnPlayerDeath.Add(onPlayerDeath)
