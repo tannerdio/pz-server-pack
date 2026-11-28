@@ -201,7 +201,10 @@ function BKAreaWindow:rebuildTree()
     local area = self:area()
     if area == nil then return end
     local filter = string.lower(self.filterBox and self.filterBox:getText() or "")
-    if filter == "" then list:addItem("personal", { kind = "personal" }) end
+    if filter == "" then
+        list:addItem("personal", { kind = "personal" })
+        list:addItem("overflow", { kind = "overflow" })
+    end
     for _, fam in ipairs(BKTaxonomy.FAMILIES) do
         local rows = orderedRows(fam.key)
         local famMatch = filter ~= "" and string.find(string.lower(fam.label), filter, 1, true) ~= nil
@@ -278,6 +281,12 @@ function BKAreaWindow.drawTreeRow(list, y, item, alt)
             0.8, 0.8, 0.8, 1, FONT)
         return y + ROW_HGT
     end
+    if d.kind == "overflow" then
+        drawBox(list, 8, y, BKLoot.isOverflow(area) and "on" or "off")
+        list:drawText("Overflow: takes anything that has no room where it belongs", 8 + BOX + 8, ty,
+            0.8, 0.8, 0.8, 1, FONT)
+        return y + ROW_HGT
+    end
     if d.kind == "family" then
         local on, total = BKLoot.familyState(area, d.fam.key)
         list:drawRect(0, y, w, ROW_HGT - 1, 0.3, 0.2, 0.2, 0.25)
@@ -328,6 +337,9 @@ function BKAreaWindow.onTreeMouseDown(list, x, y)
     if d.kind == "personal" then
         local on = not BKLoot.isPersonal(area)
         win:apply(function(sel) BKLoot.toggle(sel, BKLoot.PERSONAL, on) end)
+    elseif d.kind == "overflow" then
+        local on = not BKLoot.isOverflow(area)
+        win:apply(function(sel) BKLoot.toggle(sel, BKLoot.OVERFLOW, on) end)
     elseif d.kind == "family" then
         local bx = 8 + INDENT
         if x >= bx - 4 and x <= bx + BOX + 4 then

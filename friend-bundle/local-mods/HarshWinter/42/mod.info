@@ -1,0 +1,6 @@
+name=Harsh Winter
+id=HarshWinter
+author=Tanner / DioGenerations
+modversion=1.1.0
+versionMin=42.0.0
+description=A long, hard, snowy winter. The coldest part of the year averages -15 C instead of 0 C (summer is unchanged), and while it is winter, weather fronts come more often and last longer, so it snows a lot. Works in single player and on a server.

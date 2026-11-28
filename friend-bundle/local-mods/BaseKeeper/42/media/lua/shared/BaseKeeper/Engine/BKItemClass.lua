@@ -216,6 +216,7 @@ end
 function BKItemClass.classify(item)
     if item == nil then return "other", "nil", false, "other" end
     local entry = BKItemClass.catalogEntry(item)
+    local forced = nil -- fine group decided together with the class (v0.20.0 mod items)
     local ok, res, why = pcall(function()
         local typeName = lower(item:getType())
         local category = tostring(item:getCategory() or "")
@@ -224,6 +225,9 @@ function BKItemClass.classify(item)
         -- v0.12.0 catalog: a vanilla item's static class, unless the game decides it live (food state, fluids)
         if entry and entry.c == "food" then
             if isFood then return foodClass(item), "food" end
+            -- v0.20.0: an empty milk carton / milk bottle is an empty bottle, not dairy for the pantry
+            local efc, efw = fluidClass(item, typeName, call(item, "getFluidContainer"))
+            if efc == "empties" then return efc, efw end
             return "food_dry", "catalog" -- scripted with FoodType but not a Food object (vinegar jug, mixes)
         end
         -- animal by-products the game scripts as food (ItemType base:food) but nobody eats (v0.8.6, Tanner
@@ -232,7 +236,9 @@ function BKItemClass.classify(item)
         if string.sub(typeName, 1, 5) == "dung_" then return "tool", "itemtype" end
         if typeName == "chickenfeather" or typeName == "turkeyfeather" then return "build_material", "itemtype" end
         -- powders and tablets the game scripts as drainables, not food or drink (v0.9.0 rule 1: pantry, not fridge)
-        if tag(item, "PURIFY_WATER") or string.find(typeName, "milkpowder", 1, true) then return "food_dry", "itemtype" end
+        -- v0.20.0: water purification tablets are no longer pantry food; the catalog files them under camping
+        if string.find(typeName, "milkpowder", 1, true) then return "food_dry", "itemtype" end
+        if tag(item, "PURIFY_WATER") and entry == nil then forced = "camping"; return "tool", "itemtype" end
         if isFood and entry == nil then return foodClass(item), "food" end
         if tag(item, "EMPTY_CAN") then return "trash", "trash" end -- Pop3Empty and friends (v0.9.0 rule 2)
         -- refillable things at zero (lighter, blow torch, propane bottle): KeepOnDeplete keeps them when empty (rule 5)
@@ -252,6 +258,29 @@ function BKItemClass.classify(item)
             end
             if isFood and entry.c ~= "other" and call(item, "isRotten") == true then return "trash", "trash" end
             return entry.c, "catalog"
+        end
+        -- v0.20.0 mod items (gun packs and others the catalog does not list), by what the game itself says they
+        -- are instead of by their name. All certain, so "Sort now" may move them. Seen on Tanner's base 2026-11-27:
+        -- every modded gun was a "melee weapon", bipods/silencers too, gun cleaning kits were cleaning supplies,
+        -- modded ammo boxes and magazines were only guesses, picked-up furniture was "unsorted".
+        if category == "Moveable" or instanceof(item, "Moveable") then forced = "furniture"; return "other", "itemtype" end
+        local rawDisplay = tostring(item:getDisplayCategory() or "")
+        local isWeapon = category == "Weapon" or (item.IsWeapon and item:IsWeapon()) == true
+        if category == "WeaponPart" or instanceof(item, "WeaponPart") or rawDisplay == "WeaponPart"
+                or rawDisplay == "WepPart" or typeName == "cleaningkit" then
+            forced = "weapon_part"; return "weapon", "class"
+        end
+        if isWeapon and type(item.isRanged) == "function" then
+            local okR, ranged = pcall(item.isRanged, item)
+            if okR and ranged == true then forced = "weapon_gun"; return "weapon", "class" end
+        end
+        if not isWeapon then
+            -- a magazine holds rounds; boxes, cartons and loose rounds carry the game's own Ammo category
+            if (tonumber(call(item, "getMaxAmmo")) or 0) > 0 or rawDisplay == "Ammo" or rawDisplay == "WepAmmo"
+                    or rawDisplay == "WepAmmoMag" then
+                forced = "ammo"; return "ammo", "itemtype"
+            end
+            if string.find(typeName, "tirerepair", 1, true) then forced = "mechanics"; return "mechanics", "itemtype" end
         end
         if tag(item, "IS_MEMENTO") or SURE_JUNK_TYPES[typeName] then return "junk", "itemtype" end
         if anyMatch(typeName, TRASH_NAMES) then return "trash", "trash" end
@@ -338,6 +367,8 @@ function BKItemClass.classify(item)
     local group
     if res == "empties" or res == "trash" then
         group = res
+    elseif forced then
+        group = forced
     elseif entry then
         group = entry.g
     else

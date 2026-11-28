@@ -88,6 +88,7 @@ BKPlanner.DRAWER_TYPES = { toolcabinet = true, smallbox = true, officedrawers = 
 -- (carpentry with carpentry, cleaning with cleaning) = COMPANION_BONUS, same family (workshop, kitchen...) =
 -- FAMILY_BONUS, same calibre for guns/ammo/magazines = COMPANION_BONUS. The old substring GROUPS table is gone.
 BKPlanner.FAMILY_BONUS = 1
+BKPlanner.OVERFLOW_SCORE = 1    -- an overflow container always scores this: above MIN_FLOOR_SCORE, below any real home
 BKPlanner.skipPredicate = nil  -- set by the keeper: function(item) -> reason string / true to leave the item alone
 BKPlanner.refusedPredicate = nil -- set by the keeper: function(c, item) -> true when c refused this item at move time recently
 
@@ -96,6 +97,11 @@ local function dist(a, b)
 end
 
 local function itemWeight(item)
+    -- v0.21.0: a bag is stored whole, so it weighs what the container will count for it (itself + contents)
+    if type(item.getInventory) == "function" and type(item.getUnequippedWeight) == "function" then
+        local okU, u = pcall(item.getUnequippedWeight, item)
+        if okU and tonumber(u) then return tonumber(u) end
+    end
     local ok, w = pcall(function() return item:getActualWeight() end)
     if ok and tonumber(w) then return tonumber(w) end
     local ok2, w2 = pcall(function() return item:getWeight() end)
@@ -373,12 +379,48 @@ local function areaDestination(scan, class, item, at, excludeContainer, budget, 
     return bestC, bestS, wantC, wantS
 end
 
+-- v0.20.0 overflow (Tanner 2026-11-27: "overflow for everything is small room"): containers inside a loot zone
+-- ticked "Overflow" take whatever has no room at home, nearest first. The hard rules still hold (allowed():
+-- spoiling food only into powered cold storage, nothing else into it); bins never count.
+local function overflowDestination(scan, class, item, at, excludeContainer, budget)
+    if class == "trash" then return nil end
+    local bestC, bestD = nil, nil
+    for _, c in ipairs(scan.containers) do
+        if c.overflow and c.container ~= excludeContainer and not c.noDest and not c.locked and not c.personal
+                and not BKPlanner.NO_SOURCE[c.ctype] and BKRules.isSortable(c.ctype)
+                and allowed(scan, class, c, item) and fits(c, item, budget) then
+            local d = dist(at, c)
+            if bestD == nil or d < bestD then bestC, bestD = c, d end
+        end
+    end
+    return bestC
+end
+
 -- Best destination for one item. Returns entry, score, wanted entry, wanted score.
 -- "wanted" is the best container ignoring space; it is where a pile goes when nothing has room.
 -- fallback (floor and bag items only): a class no container in the zone has a rule for still goes to generic
 -- storage, at half the "other" score, so nothing certain is left on the floor just because the base lacks a
 -- specialist for it. Tidy-ups never use it.
-function BKPlanner.bestDestination(scan, class, sure, item, at, excludeContainer, budget, fallback)
+-- v0.21.0 (Tanner 2026-11-27: bags and containers "can be moved to further storage, same with like long term
+-- survival things, boxes of lightbulbs and batteries (keep boxes of meds in main medical cabinet unless fully
+-- stocked)"). A "deep" item is a bag/case (class container) or boxed bulk stock (type name ends in Box / Carton);
+-- ammo is not (it stays with its calibre). For a deep item distance does not count: any container on any floor of
+-- the zone is as good as a near one, and a full loot zone does not hold it back (it goes on to the next best
+-- container instead of waiting beside the zone). Its loot zone still comes first while there is room.
+function BKPlanner.isDeep(item, class)
+    if item == nil or class == "ammo" or class == "trash" then return false end
+    if class == "container" then return true end
+    local t = lowerStr(m(item, "getType"))
+    return string.find(t, "box$") ~= nil or string.find(t, "carton$") ~= nil or has(t, "_box")
+end
+
+-- noOverflow: never answer with an overflow container (the item is already sitting in one).
+function BKPlanner.bestDestination(scan, class, sure, item, at, excludeContainer, budget, fallback, noOverflow)
+    local function orOverflow(wantC, wantS)
+        local oc = (not noOverflow and item ~= nil) and overflowDestination(scan, class, item, at, excludeContainer, budget) or nil
+        if oc then return oc, BKPlanner.OVERFLOW_SCORE, wantC, wantS end
+        return nil, 0, wantC, wantS
+    end
     local bestC, bestS = nil, 0
     local farC, farS = nil, 0
     local wantC, wantS = nil, 0
@@ -389,7 +431,8 @@ function BKPlanner.bestDestination(scan, class, sure, item, at, excludeContainer
     local group = info and info.group or nil
     local areaC, areaS, areaWantC, areaWantS = areaDestination(scan, class, item, at, excludeContainer, budget, info)
     if areaC then return areaC, areaS, areaWantC, areaWantS end
-    if areaWantC and BKLoot.STRICT then return nil, 0, areaWantC, areaWantS end
+    local deep = BKPlanner.isDeep(item, class)
+    if areaWantC and BKLoot.STRICT and not deep then return orOverflow(areaWantC, areaWantS) end
     for _, c in ipairs(scan.containers) do
         if c.container ~= excludeContainer and not c.noDest and not c.locked and not c.personal and allowed(scan, class, c, item)
                 and (sure or BKRules.GENERIC_TYPES[c.ctype]) and not BKLoot.reserved(c) then
@@ -404,7 +447,8 @@ function BKPlanner.bestDestination(scan, class, sure, item, at, excludeContainer
             if s > 0 then
                 local d = dist(at, c)
                 local penalised = math.max(s - d * BKPlanner.DIST_PENALTY, s * BKPlanner.MIN_DIST_FACTOR)
-                if d <= BKPlanner.RADIUS then
+                if deep then penalised = s - d * 0.001 end -- distance only breaks ties
+                if deep or d <= BKPlanner.RADIUS then
                     if penalised > wantS then wantC, wantS = c, penalised end
                     if penalised > bestS and fits(c, item, budget) then bestC, bestS = c, penalised end
                 elseif sure and specialist(class, c, group) then
@@ -417,7 +461,8 @@ function BKPlanner.bestDestination(scan, class, sure, item, at, excludeContainer
     if not wantC then wantC, wantS = wantFarC, wantFarS end
     if areaWantC then wantC, wantS = areaWantC, areaWantS end -- not strict: room elsewhere, but the pile stays by the area
     if bestC then return bestC, bestS, wantC, wantS end
-    return farC, farS, wantC, wantS
+    if farC then return farC, farS, wantC, wantS end
+    return orOverflow(wantC, wantS)
 end
 
 -- Piles --------------------------------------------------------------------------------------------------------
@@ -501,9 +546,17 @@ local function skipItem(item)
         end
         local cat = item:getCategory()
         if cat == "Key" or cat == "Moveable" or cat == "Corpse" then return string.lower(cat) end
+        -- Tanner 2026-11-27: "furniture item on ground should not be sorted ever" (whatever category a mod gives it)
+        if instanceof(item, "Moveable") then return "moveable" end
+        -- v0.21.0 (Tanner 2026-11-27: "the only bag or container that shouldnt be sorted (like moved) into a
+        -- container is a duffel bag, all else should go into a container, unless placed physically"): a duffel is
+        -- never stored, full or empty; every other bag is stored whole with whatever is in it
         if cat == "Container" and item.getInventory then
-            local inv = item:getInventory()
-            if inv and inv:getItems() and inv:getItems():size() > 0 then return "bag with contents" end
+            if BKPlanner.isDuffel(item) then return "duffel" end
+            if not BKPlanner.SOURCE_BAGS_ONLY then
+                local inv = item:getInventory()
+                if inv and inv:getItems() and inv:getItems():size() > 0 then return "bag with contents" end
+            end
         end
         if BKPlanner.skipPredicate then
             local why = BKPlanner.skipPredicate(item)
@@ -566,6 +619,10 @@ end
 -- A bag the sorter may empty: a duffel bag by type, or anything whose name says Duffel (modded bags).
 function BKPlanner.isSourceBag(bagItem)
     if not BKPlanner.SOURCE_BAGS_ONLY then return true end
+    return BKPlanner.isDuffel(bagItem)
+end
+
+function BKPlanner.isDuffel(bagItem)
     if not bagItem then return false end
     local ok, full = pcall(function() return bagItem:getFullType() end)
     if ok and full and BKPlanner.SOURCE_BAG_TYPES[full] then return true end
@@ -595,7 +652,9 @@ function BKPlanner.plan(zone, opts)
     for _, f in ipairs(BKPlanner.FLOOR_INBOX and scan.floorItems or {}) do
         -- bags are emptied in step 2 and left where they are; items the player placed on purpose are not touched;
         -- the floor of a personal area is not an inbox
-        local skip = (f.personal and "personal") or (f.isBag and "bag") or (f.placed and "placed") or skipItem(f.item)
+        -- v0.21.0: only a duffel stays on the floor to be emptied; any other bag is stored whole like an item
+        local stays = f.isBag and (not BKPlanner.SOURCE_BAGS_ONLY or BKPlanner.isDuffel(f.item))
+        local skip = (f.personal and "personal") or (stays and "bag") or (f.placed and "placed") or skipItem(f.item)
         if skip then
             if skip ~= "bag" then leave(f.item, nil, "floor", f, skip) end
         else
@@ -637,7 +696,7 @@ function BKPlanner.plan(zone, opts)
         if bag.personal then
             -- hands off
         elseif not BKPlanner.isSourceBag(bag.item) then
-            leave(bag.item, nil, "bag", bag, "not a duffel")
+            -- not a duffel: step 1 stores the bag whole (or left it for being placed), nothing to empty here
         else
             ok, items = pcall(function() return bag.inventory:getItems() end)
         end
@@ -715,7 +774,10 @@ function BKPlanner.plan(zone, opts)
                         -- loot areas redistribute: a certain item whose class (or fine group) has an area migrates
                         -- from anywhere else in the zone; an item whose class is not ticked on the area it sits in
                         -- is evicted
-                        local hasArea = sure and #designatedFor(scan, class, group) > 0
+                        -- v0.20.0 (Tanner 2026-11-27: Sort now "resorts any strays in any container it shouldnt be
+                        -- in"): during a Sort now pass a guessed class counts too for the two clear cases, an item in a
+                        -- loot zone that is not for it and an item whose loot zone is elsewhere
+                        local hasArea = (sure or forceTidy) and #designatedFor(scan, class, group) > 0
                         local migrate, evict = false, false
                         if BKLoot.designated(src, class, group) then
                             here = BKLoot.AREA_BONUS + here -- already where its loot area says: never a candidate
@@ -738,7 +800,8 @@ function BKPlanner.plan(zone, opts)
                             and scan.sectionClasses and (scan.sectionClasses[class] == true
                                 or (group and scan.sectionClasses[BKTaxonomy.groupKey(group)] == true))
                             and not BKSections.designated(src, class, group)
-                        local candidate = sure and (here <= 0 or freezeIt or reseason or sectionMove) and class ~= "rotten"
+                        local strayGuess = forceTidy and not sure and (migrate or evict)
+                        local candidate = (sure or strayGuess) and (here <= 0 or freezeIt or reseason or sectionMove) and class ~= "rotten"
                             and (class ~= "other" or migrate or evict or sectionMove)
                         -- food never leaves cold storage, except to its own area or out of an area that is not for
                         -- food (allowed() still forces a powered fridge/freezer as the destination)
@@ -747,11 +810,15 @@ function BKPlanner.plan(zone, opts)
                             candidate = false
                         end
                         if candidate then
-                            local c, s = BKPlanner.bestDestination(scan, class, sure, item, src, src.container, budget, evict)
+                            -- an item waiting in overflow only ever goes home, never to another overflow container
+                            local c, s = BKPlanner.bestDestination(scan, class, sure, item, src, src.container, budget, evict,
+                                src.overflow == true)
                             local minGain = evict and BKPlanner.EVICT_MIN_GAIN or BKPlanner.MIN_GAIN
+                            -- a stray (its container has no use for it) whose home is full goes to overflow
+                            local toOverflow = c ~= nil and c.overflow == true and here <= 0
                             if c and (specialist(class, c, group) or BKLoot.designated(c, class, group)
-                                    or BKSections.designated(c, class, group) or evict)
-                                    and s - here >= minGain then
+                                    or BKSections.designated(c, class, group) or evict or toOverflow)
+                                    and (s - here >= minGain or toOverflow) then
                                 reserve(c, item, budget)
                                 table.insert(jobs, newJob(item, class, sure, src.container, src.ctype, src.x, src.y, src.z,
                                     { srcEntry = src, group = group }, c, s, s - here))

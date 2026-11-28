@@ -37,7 +37,7 @@
     },
     {
         "path":  "BaseKeeper\\42\\media\\lua\\client\\BaseKeeper\\UI\\BKAreaWindow.lua",
-        "sha256":  "d048c06f35f3ba5e6fec608053c5e270290f52c90f2664cbd3cf9ae545447e00"
+        "sha256":  "0afd3f6c9450b3b400c19625e534b90be766964d9aa18dd1b5c3883e63cb78c6"
     },
     {
         "path":  "BaseKeeper\\42\\media\\lua\\client\\BaseKeeper\\UI\\BKContextMenu.lua",
@@ -73,7 +73,7 @@
     },
     {
         "path":  "BaseKeeper\\42\\media\\lua\\shared\\BaseKeeper\\BKLayout.lua",
-        "sha256":  "ccb05d4e940fa8cd2301186f18c4e46fda38fc1bbbaafdb4d638321053e11063"
+        "sha256":  "29a3ec613d7795d83b426cf4b87dda6f09f8857c5360a07eea89b8779c4c9fc4"
     },
     {
         "path":  "BaseKeeper\\42\\media\\lua\\shared\\BaseKeeper\\BKLog.lua",
@@ -81,7 +81,7 @@
     },
     {
         "path":  "BaseKeeper\\42\\media\\lua\\shared\\BaseKeeper\\BKLoot.lua",
-        "sha256":  "9972045d74b191db145d97cc7a1ecdd4a5c62c95a6738b0d922b257289652edc"
+        "sha256":  "7dcdaabe36339e1b3ac573a62fcd81c46ba94aec641f521169da6400cff93581"
     },
     {
         "path":  "BaseKeeper\\42\\media\\lua\\shared\\BaseKeeper\\BKSections.lua",
@@ -97,7 +97,7 @@
     },
     {
         "path":  "BaseKeeper\\42\\media\\lua\\shared\\BaseKeeper\\Engine\\BKItemClass.lua",
-        "sha256":  "15dfc31013e0945f1f81192fbeadbe2b00c3baf1aabd8d8d99137515125d22af"
+        "sha256":  "ec6ced9fb011fcaa9fa5e6f96ffb620ee964eff3db1acc8acaf8a869417a8b7f"
     },
     {
         "path":  "BaseKeeper\\42\\media\\lua\\shared\\BaseKeeper\\Engine\\BKPlaces.lua",
@@ -105,7 +105,7 @@
     },
     {
         "path":  "BaseKeeper\\42\\media\\lua\\shared\\BaseKeeper\\Engine\\BKPlanner.lua",
-        "sha256":  "46bb9c3dfd8e0561d2042a072b0507039d17b998b7f118894cc9128f314cb4f5"
+        "sha256":  "390dbc57891e7100100bd3b3035617d2acc0d81664e12e43acd4c2b80cb6d996"
     },
     {
         "path":  "BaseKeeper\\42\\media\\lua\\shared\\BaseKeeper\\Engine\\BKRules.lua",
@@ -121,7 +121,7 @@
     },
     {
         "path":  "BaseKeeper\\42\\mod.info",
-        "sha256":  "57b7afb781c148e31508581c431d4e5ffac3e58ceed288e43e1954638fb681ac"
+        "sha256":  "b2eff1c7288e1a0095304025030854d9588e77f582735cedac9c80ea9899d270"
     },
     {
         "path":  "BaseKeeper\\common\\.keep",
@@ -178,6 +178,18 @@
     {
         "path":  "GunSwap\\common\\.keep",
         "sha256":  "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+        "path":  "HarshWinter\\42\\media\\lua\\shared\\HarshWinter.lua",
+        "sha256":  "c6faf5d2e3395dbbcc854972c95a734b33f2d615bfd6d6857d251a7d9f728aa8"
+    },
+    {
+        "path":  "HarshWinter\\42\\mod.info",
+        "sha256":  "e79650b93ce3510e7396cdcb51b69e27fe49e7bd6f57f059d30a8e28367fadcc"
+    },
+    {
+        "path":  "HarshWinter\\common\\.keep",
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
         "path":  "KeepSkills\\42\\media\\lua\\client\\KeepSkills_Client.lua",

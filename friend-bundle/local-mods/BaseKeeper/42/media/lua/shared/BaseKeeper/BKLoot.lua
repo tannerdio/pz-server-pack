@@ -46,8 +46,13 @@ BKLoot.CATEGORIES = {
     { key = "trash", label = "Trash (bins only)", classes = { "trash" }, family = "misc" },
     { key = "other", label = "Everything else", classes = { "other" }, family = "misc" },
     { key = "personal", label = "Personal (hands off)", classes = {}, personal = true, family = "misc" },
+    -- v0.20.0 (Tanner 2026-11-27: "overflow for everything is small room"). `personal = true` here only means "a
+    -- special row that stands alone" (kept out of the family lists, exclusive when ticked); the hands-off rule is
+    -- BKLoot.isPersonal, which looks at the "personal" key alone.
+    { key = "overflow", label = "Overflow (takes what has no room at home)", classes = {}, personal = true, overflow = true, family = "misc" },
 }
 BKLoot.PERSONAL = "personal"
+BKLoot.OVERFLOW = "overflow"
 
 -- fine groups that only repeat a broad category above, or are not something to give a shelf
 BKLoot.NO_GROUP_CATEGORY = { medical = true, mechanics = true, fuel = true, ammo = true, cook_ware = true,
@@ -142,7 +147,7 @@ function BKLoot.toggle(sel, key, on)
         if on then sel.cats, sel.excl = { [key] = true }, {} else sel.cats[key] = nil end
         return
     end
-    if on then sel.cats[BKLoot.PERSONAL] = nil end
+    if on then sel.cats[BKLoot.PERSONAL] = nil; sel.cats[BKLoot.OVERFLOW] = nil end
     if cat.fine then
         if on then
             sel.excl[key] = nil
@@ -258,6 +263,12 @@ end
 -- The area is hands off: nothing goes in, nothing comes out, no piles next to it, no cooking from it.
 function BKLoot.isPersonal(area)
     return area ~= nil and area.cats ~= nil and area.cats[BKLoot.PERSONAL] == true
+end
+
+-- The area is the base's overflow: its containers take whatever has no room at home, and "Sort now" sends those
+-- items home again once there is room.
+function BKLoot.isOverflow(area)
+    return area ~= nil and area.cats ~= nil and area.cats[BKLoot.OVERFLOW] == true
 end
 
 -- The tile sits inside a personal area.
@@ -381,6 +392,8 @@ function BKLoot.setCats(id, cats, excl)
     end
     if sel.cats[BKLoot.PERSONAL] then
         sel.cats = { [BKLoot.PERSONAL] = true }
+    elseif sel.cats[BKLoot.OVERFLOW] then
+        sel.cats = { [BKLoot.OVERFLOW] = true }
     else
         for key, v in pairs(excl or {}) do
             local cat = BKLoot.category(key)
@@ -433,7 +446,7 @@ function BKLoot.annotate(scan)
     scan.designated = {}
     local areas = {}
     for _, c in ipairs(scan.containers) do
-        c.area, c.areaClasses, c.areaExcl = nil, nil, nil
+        c.area, c.areaClasses, c.areaExcl, c.overflow = nil, nil, nil, nil
         local area = BKLoot.at(c.x, c.y, c.z)
         if area and BKLoot.hasCategories(area) then
             local key = tostring(area.id)
@@ -443,6 +456,7 @@ function BKLoot.annotate(scan)
             c.areaClasses = areas[key].classes -- empty for a personal area: reserved for nothing, designated for nothing
             c.areaExcl = area.excl                 -- v0.16.0: "g:<group>" keys the area refuses despite a class match
             c.personal = BKLoot.isPersonal(area) or nil
+            c.overflow = BKLoot.isOverflow(area) or nil -- reserved for nothing, designated for nothing: the planner's last resort
             if not c.noDest and not c.locked and not c.personal then
                 for class in pairs(c.areaClasses) do
                     scan.designated[class] = scan.designated[class] or {}

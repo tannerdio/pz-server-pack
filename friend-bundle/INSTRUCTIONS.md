@@ -19,6 +19,7 @@ Added 2026-11-13, a new weapon pack:
 - **Gun Swap** (`GunSwap`), a small local mod that runs on the server and turns the old guns, magazines, attachments and ammo into the new weapon pack's items: lying around the world, in vehicles and in what players carry. It also packs loose single rounds of the new pack lying around into boxes. It ships in this folder; the files must be present on this machine too because the server checks them.
 - **EFZ Boxes Only** (`EFZBoxesOnly`), a small local mod that stops the new weapon pack's loot from spawning single loose rounds; ammo comes in boxes instead, about the same total amount. It ships in this folder; the files must match the host's.
 - **Keep Skills** (`KeepSkills`), a small local mod for the second server: when a character dies, the server banks the XP it earned (not the skills it started with) and adds it on top of the next character's own starting skills. It ships in this folder; the files must match the host's.
+- **Harsh Winter** (`HarshWinter`), a small local mod for the second server: the coldest part of the year averages -15 C instead of 0 C (summer is unchanged), winter starts about a month earlier, and while it is winter the weather fronts come more often and last longer, so it snows a lot. It ships in this folder; the files must match the host's.
 - **Attachments UI** (`AttachmentsUI`, Workshop 3816324722) is removed from the mod list. It took over the attachment menu of the new pack's guns and froze the host's game. The user can stay subscribed; it just must not be enabled.
 - **True Ballistics** (`ViewpointTrueBallistics`) is switched off in the mod list. It disables itself on 42.22.2, and while it is enabled the new weapon pack turns its own ballistics off. Its patched jar stays in the manifest and should still be applied, so the files match.
 
@@ -28,15 +29,16 @@ Added 2026-11-13, a new weapon pack:
 |---|---|
 | `workshop\` | The 10 patched files, laid out exactly as they sit under `steamapps\workshop\content\108600\` |
 | `manifest.json` | For each file: relative path, sha256 of the unpatched original, sha256 of the patched file |
-| `local-mods\BaseKeeper\` | Base Keeper 0.19.0, the other player's own mod. It is not on the Workshop, so it ships here |
+| `local-mods\BaseKeeper\` | Base Keeper 0.21.0, the other player's own mod. It is not on the Workshop, so it ships here |
 | `local-mods\EFZAdsCompat\` | EFZ x Viewpoint ADS compat 1.0.0, also the other player's own mod |
 | `local-mods\CoopFastForward\` | Co-op Fast Forward 1.1.0, also the other player's own mod |
 | `local-mods\VPCursorKeep\` | Viewpoint cursor keep 1.0.0, also the other player's own mod |
 | `local-mods\GunSwap\` | Gun Swap 1.3.0, also the other player's own mod |
 | `local-mods\EFZBoxesOnly\` | EFZ Boxes Only 1.0.0, also the other player's own mod |
 | `local-mods\KeepSkills\` | Keep Skills 1.1.0, also the other player's own mod |
+| `local-mods\HarshWinter\` | Harsh Winter 1.1.0, also the other player's own mod |
 | `local-mods-manifest.json` | sha256 of every file under `local-mods\` |
-| `default.txt` | The other player's enabled mod list (197 mods), from `%UserProfile%\Zomboid\mods\default.txt` |
+| `default.txt` | The other player's enabled mod list (199 mods), from `%UserProfile%\Zomboid\mods\default.txt` |
 | `pzfix.py`, `linkcheck.py` | The scripts that produced the jar patches. Reference and fallback only |
 
 ## Before you start
@@ -73,6 +75,8 @@ Then the ADS compat mod:
 
 6a6. Copy `local-mods\KeepSkills` to `%UserProfile%\Zomboid\mods\KeepSkills`, so that `%UserProfile%\Zomboid\mods\KeepSkills\42\mod.info` exists. Verify its files against `local-mods-manifest.json`.
 
+6a7. Copy `local-mods\HarshWinter` to `%UserProfile%\Zomboid\mods\HarshWinter`, so that `%UserProfile%\Zomboid\mods\HarshWinter\42\mod.info` exists. Verify its files against `local-mods-manifest.json`.
+
 Then the weapon pack:
 
 6b. Check that `<workshop>\3722064198\mods\Gunworks_gang_framework` and `<workshop>\3824755284\mods\EscapeFromZomboidFirearms` exist. If either is missing, the user is not subscribed: give them these two links, have them click Subscribe, and wait for Steam to finish the download (about 1.9 GB) before going on.
@@ -82,7 +86,7 @@ Then the weapon pack:
 
 Then the mod list:
 
-7. Back up `%UserProfile%\Zomboid\mods\default.txt` and compare it with the bundled `default.txt`. Show the user the differences and ask before replacing it, because replacing it changes which mods they have enabled. The bundled list has Mvdox Grass removed on purpose; whatever else you do, make sure no `Mvdox-Grass-v1` line is left enabled. It also has `ViewpointTrueBallistics` removed and `SWMG`, `EscapeFromZomboidFirearms`, `EFZAdsCompat`, `CoopFastForward`, `VPCursorKeep`, `GunSwap`, `EFZBoxesOnly` and `KeepSkills` added, and `AttachmentsUI` removed; make sure no `AttachmentsUI` line is left enabled.
+7. Back up `%UserProfile%\Zomboid\mods\default.txt` and compare it with the bundled `default.txt`. Show the user the differences and ask before replacing it, because replacing it changes which mods they have enabled. The bundled list has Mvdox Grass removed on purpose; whatever else you do, make sure no `Mvdox-Grass-v1` line is left enabled. It also has `ViewpointTrueBallistics` removed and `SWMG`, `EscapeFromZomboidFirearms`, `EFZAdsCompat`, `CoopFastForward`, `VPCursorKeep`, `GunSwap`, `EFZBoxesOnly`, `KeepSkills` and `HarshWinter` added, and `AttachmentsUI` removed; make sure no `AttachmentsUI` line is left enabled.
 
 ## Do not touch
 
@@ -92,7 +96,7 @@ Then the mod list:
 
 ## Report back
 
-List each of the 10 files as patched, already patched, mismatched, or missing, whether Base Keeper, EFZAdsCompat, CoopFastForward, VPCursorKeep, GunSwap, EFZBoxesOnly and KeepSkills were installed and verified, whether both weapon pack Workshop items are present and at which version, plus the result of the mod list comparison.
+List each of the 10 files as patched, already patched, mismatched, or missing, whether Base Keeper, EFZAdsCompat, CoopFastForward, VPCursorKeep, GunSwap, EFZBoxesOnly, KeepSkills and HarshWinter were installed and verified, whether both weapon pack Workshop items are present and at which version, plus the result of the mod list comparison.
 
 ## Reference: the 10 files
 

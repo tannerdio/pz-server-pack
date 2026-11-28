@@ -1,6 +1,6 @@
 name=Base Keeper
 id=BaseKeeper
 author=Tanner / DioGenerations
-modversion=0.19.1
+modversion=0.21.0
 versionMin=42.21.0
 description=Mark a zone over your base and it keeps itself sorted. Anything dropped on the floor inside the zone (every floor of the building) is moved to the right container a few items at a time: fresh food to a powered fridge, frozen food to the freezer, tools to the tool cabinet, medical to the medicine cabinet, and so on for 5000+ vanilla items. Mark loot zones and tick whole categories to decide exactly where each kind of loot goes. Items already in storage are left alone until you press Sort now. One on-screen Base Keeper button opens a small panel: browse and grab base loot, manage base zones and loot zones, auto sort on/off, Sort now, base status. Multiplayer: zones, loot zones and sorting run on the server and sync to everyone; meal prep, laundry, med kit restock and run loadout are single player only.

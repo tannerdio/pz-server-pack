@@ -626,7 +626,7 @@ function BKLayout.areasInside(zone)
     local out = {}
     for _, area in ipairs(BKLoot.list()) do
         if (BKZones.ALL_FLOORS or area.z == zone.z) and area.x1 >= zone.x1 and area.x2 <= zone.x2 and area.y1 >= zone.y1 and area.y2 <= zone.y2
-                and not BKLoot.isPersonal(area) then
+                and not BKLoot.isPersonal(area) and not BKLoot.isOverflow(area) then
             table.insert(out, area)
         end
     end
